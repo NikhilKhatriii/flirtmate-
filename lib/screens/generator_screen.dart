@@ -6,22 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/flirt_provider.dart';
+import '../theme/app_theme.dart';
 import '../data/arc_lines.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/shimmer_loading.dart';
 import '../widgets/personalize_sheet.dart';
 import 'favorites_screen.dart';
-
-// ---------------------------------------------------------------------------
-// Apple-style design tokens
-//   Background        #000000
-//   Elevated surface  #1C1C1E
-//   Card border       #38383A
-//   Label primary     #FFFFFF
-//   Label secondary   #8E8E93
-//   System blue       #007AFF
-//   Destructive red   #FF3B30
-// ---------------------------------------------------------------------------
 
 /// Builds a short, readable summary of the active personalization/vibe for
 /// the badge row, e.g. "For Maya · loves hiking", "For Maya", "Just met",
@@ -81,48 +71,44 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     final cat = provider.selectedCategory;
     if (cat == null) {
       return const Scaffold(
-        backgroundColor: Color(0xFF000000),
-        body: Center(child: Text('No category', style: TextStyle(color: Colors.white))),
+        backgroundColor: AppTheme.background,
+        body: Center(child: Text('No category', style: TextStyle(color: AppTheme.textPrimary))),
       );
     }
     final favCount = provider.favorites.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Column(children: [
-          // ----------------------------------------------------------------
           // Navigation bar
-          // ----------------------------------------------------------------
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 8, 12, 0),
             child: Row(children: [
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: const Icon(
+                child: Icon(
                   CupertinoIcons.chevron_left,
-                  color: Color(0xFF007AFF),
+                  color: AppTheme.primary,
                   size: 20,
                 ),
               ),
               const Spacer(),
-              // Category title — icon + name
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(cat.icon, color: Colors.white, size: 17),
+                Icon(cat.icon, color: AppTheme.primary, size: 17),
                 const SizedBox(width: 6),
                 Text(
                   cat.name,
-                  style: GoogleFonts.inter(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: -0.3,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ]),
               const Spacer(),
-              // Favorites button with badge
               Stack(clipBehavior: Clip.none, children: [
                 CupertinoButton(
                   padding: const EdgeInsets.all(10),
@@ -130,7 +116,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                       MaterialPageRoute(builder: (_) => const FavoritesScreen())),
                   child: const Icon(
                     CupertinoIcons.heart,
-                    color: Color(0xFF007AFF),
+                    color: AppTheme.primary,
                     size: 22,
                   ),
                 ),
@@ -139,15 +125,15 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     top: 6, right: 6,
                     child: Container(
                       width: 16, height: 16,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF007AFF),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryDark,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           '$favCount',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.background,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
@@ -159,9 +145,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             ]),
           ),
 
-          // ----------------------------------------------------------------
-          // Arc stage selector — segmented control style
-          // ----------------------------------------------------------------
+          // Arc stage selector
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
             child: Row(
@@ -177,38 +161,38 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                         right: stage == ArcStage.deeper ? 0 : 4,
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFF007AFF).withValues(alpha: 0.15)
-                        : const Color(0xFF1C1C1E),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFF007AFF).withValues(alpha: 0.55)
-                          : const Color(0xFF38383A),
-                      width: isSelected ? 1.5 : 0.5,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        stage.icon,
-                        size: 14,
+                      decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF007AFF)
-                            : const Color(0xFF8E8E93),
+                            ? AppTheme.primary.withValues(alpha: 0.12)
+                            : AppTheme.surface,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppTheme.primary.withValues(alpha: 0.4)
+                              : AppTheme.cardBorder,
+                          width: isSelected ? 1.5 : 0.5,
+                        ),
                       ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            stage.icon,
+                            size: 14,
+                            color: isSelected
+                                ? AppTheme.primary
+                                : AppTheme.textSecondary,
+                          ),
                           const SizedBox(height: 3),
                           Text(
                             stage.label,
                             style: GoogleFonts.inter(
                               fontSize: 10,
                               color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF8E8E93),
+                                  ? AppTheme.textPrimary
+                                  : AppTheme.textSecondary,
                               fontWeight: isSelected
-                                  ? FontWeight.w600
+                                  ? FontWeight.w700
                                   : FontWeight.w400,
                             ),
                           ),
@@ -221,16 +205,13 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             ),
           ),
 
-          // ----------------------------------------------------------------
           // Category info badge
-          // ----------------------------------------------------------------
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
             child: GlassCard(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               borderRadius: 14,
               child: Row(children: [
-                // Category icon in frosted pill
                 Container(
                   width: 38, height: 38,
                   decoration: BoxDecoration(
@@ -241,7 +222,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(cat.icon, color: Colors.white, size: 19),
+                  child: Icon(cat.icon, color: AppTheme.textPrimary, size: 19),
                 ),
                 const SizedBox(width: 12),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -249,28 +230,27 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     cat.tagline.toUpperCase(),
                     style: GoogleFonts.inter(
                       fontSize: 10,
-                      color: const Color(0xFF8E8E93),
-                      letterSpacing: 0.6,
-                      fontWeight: FontWeight.w500,
+                      color: AppTheme.textSecondary,
+                      letterSpacing: 1.0,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
                     cat.description,
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.80),
+                      color: AppTheme.textPrimary.withValues(alpha: 0.8),
                     ),
                   ),
                 ]),
                 const Spacer(),
-                // Mode pill — no emoji
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF007AFF).withValues(alpha: 0.15),
+                    color: AppTheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFF007AFF).withValues(alpha: 0.30),
+                      color: AppTheme.primary.withValues(alpha: 0.2),
                       width: 0.5,
                     ),
                   ),
@@ -282,7 +262,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                           ? CupertinoIcons.sparkles
                           : CupertinoIcons.infinite,
                       size: 10,
-                      color: const Color(0xFF007AFF),
+                      color: AppTheme.primary,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -293,8 +273,8 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                           : 'Offline',
                       style: GoogleFonts.inter(
                         fontSize: 10,
-                        color: const Color(0xFF007AFF),
-                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ]),
@@ -303,9 +283,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             ),
           ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1),
 
-          // ----------------------------------------------------------------
           // Personalize entry point
-          // ----------------------------------------------------------------
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: GestureDetector(
@@ -314,13 +292,13 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: provider.isCustomized
-                      ? const Color(0xFF007AFF).withValues(alpha: 0.10)
-                      : const Color(0xFF1C1C1E),
+                      ? AppTheme.primary.withValues(alpha: 0.08)
+                      : AppTheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: provider.isCustomized
-                        ? const Color(0xFF007AFF).withValues(alpha: 0.40)
-                        : const Color(0xFF38383A),
+                        ? AppTheme.primary.withValues(alpha: 0.3)
+                        : AppTheme.cardBorder,
                     width: 0.5,
                   ),
                 ),
@@ -331,8 +309,8 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                         : CupertinoIcons.pencil,
                     size: 16,
                     color: provider.isCustomized
-                        ? const Color(0xFF007AFF)
-                        : const Color(0xFF8E8E93),
+                        ? AppTheme.primary
+                        : AppTheme.textSecondary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -343,10 +321,10 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                       style: GoogleFonts.inter(
                         fontSize: 12.5,
                         color: provider.isCustomized
-                            ? Colors.white
-                            : const Color(0xFF8E8E93),
+                            ? AppTheme.textPrimary
+                            : AppTheme.textSecondary,
                         fontWeight: provider.isCustomized
-                            ? FontWeight.w500
+                            ? FontWeight.w600
                             : FontWeight.w400,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -355,16 +333,14 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                   const Icon(
                     CupertinoIcons.chevron_right,
                     size: 14,
-                    color: Color(0xFF636366),
+                    color: AppTheme.textMuted,
                   ),
                 ]),
               ),
             ),
           ),
 
-          // ----------------------------------------------------------------
           // History navigation
-          // ----------------------------------------------------------------
           if (provider.historyCount > 0)
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -377,11 +353,13 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 const Spacer(),
                 Text(
                   provider.state == GeneratorState.loading
-                      ? 'Generating...'
-                      : '#${provider.historyIndex + 1} of ${provider.historyCount}',
+                      ? 'GENERATING...'
+                      : '#${provider.historyIndex + 1} OF ${provider.historyCount}',
                   style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: const Color(0xFF8E8E93),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: AppTheme.textMuted,
                   ),
                 ),
                 const Spacer(),
@@ -393,9 +371,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
               ]),
             ),
 
-          // ----------------------------------------------------------------
           // Message card
-          // ----------------------------------------------------------------
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -419,40 +395,38 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             ),
           ),
 
-          // ----------------------------------------------------------------
           // Swipe hint
-          // ----------------------------------------------------------------
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Icon(
                 CupertinoIcons.arrow_left_right,
-                color: Color(0xFF636366),
+                color: AppTheme.textMuted,
                 size: 12,
               ),
               const SizedBox(width: 6),
               Text(
-                'Swipe left for new · Swipe right for previous',
+                'SWIPE LEFT FOR NEW · RIGHT FOR PREVIOUS',
                 style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: const Color(0xFF636366),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                  color: AppTheme.textMuted,
                 ),
               ),
             ]),
           ),
 
-          // ----------------------------------------------------------------
           // Action buttons — row 1
-          // ----------------------------------------------------------------
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
             child: Row(children: [
               _ActionBtn(
                 icon: CupertinoIcons.sparkles,
                 label: provider.state == GeneratorState.loading
-                    ? 'Crafting...'
-                    : 'New Line',
-                gradient: cat.gradientColors,
+                    ? 'CRAFTING...'
+                    : 'NEW LINE',
+                gradient: const [AppTheme.primaryDark, AppTheme.primary],
                 enabled: provider.state != GeneratorState.loading,
                 isPrimary: true,
                 onTap: _animateAndGenerate,
@@ -463,40 +437,36 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     ? CupertinoIcons.heart_fill
                     : CupertinoIcons.heart,
                 label: provider.isFavorited(provider.currentMessage)
-                    ? 'Saved'
-                    : 'Save',
+                    ? 'SAVED'
+                    : 'SAVE',
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
                 onTap: () async {
                   await provider.toggleFavorite();
                   if (context.mounted) {
-                    final wasSaved =
+                    final isSaved =
                     provider.isFavorited(provider.currentMessage);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Row(children: [
                           Icon(
-                            wasSaved
-                                ? CupertinoIcons.heart_slash
-                                : CupertinoIcons.heart_fill,
-                            color: Colors.white,
+                            isSaved
+                                ? CupertinoIcons.heart_fill
+                                : CupertinoIcons.heart_slash,
+                            color: AppTheme.background,
                             size: 15,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            wasSaved
-                                ? 'Removed from favorites'
-                                : 'Saved to favorites',
+                            isSaved
+                                ? 'Added to favorites'
+                                : 'Removed from favorites',
                             style: GoogleFonts.inter(
-                                fontSize: 13, color: Colors.white),
+                                fontSize: 13, color: AppTheme.background, fontWeight: FontWeight.w600),
                           ),
                         ]),
                         duration: 1800.ms,
-                        behavior: SnackBarBehavior.floating,
-                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                        backgroundColor: const Color(0xFF2C2C2E),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                        backgroundColor: AppTheme.primary,
                       ),
                     );
                   }
@@ -505,15 +475,13 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             ]),
           ),
 
-          // ----------------------------------------------------------------
           // Action buttons — row 2
-          // ----------------------------------------------------------------
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             child: Row(children: [
               _ActionBtn(
                 icon: CupertinoIcons.doc_on_doc,
-                label: 'Copy',
+                label: 'COPY',
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
                 onTap: () {
@@ -523,18 +491,14 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     SnackBar(
                       content: Row(children: [
                         const Icon(CupertinoIcons.checkmark_circle,
-                            color: Colors.white, size: 15),
+                            color: AppTheme.primary, size: 15),
                         const SizedBox(width: 8),
                         Text('Copied to clipboard',
                             style: GoogleFonts.inter(
-                                fontSize: 13, color: Colors.white)),
+                                fontSize: 13, color: AppTheme.textPrimary)),
                       ]),
-                      duration: 1800.ms,
-                      behavior: SnackBarBehavior.floating,
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      backgroundColor: const Color(0xFF2C2C2E),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                      duration: 1500.ms,
+                      backgroundColor: AppTheme.surfaceLight,
                     ),
                   );
                 },
@@ -542,7 +506,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
               const SizedBox(width: 10),
               _ActionBtn(
                 icon: CupertinoIcons.share,
-                label: 'Share',
+                label: 'SHARE',
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
                 onTap: () => Share.share(provider.currentMessage),
@@ -554,10 +518,6 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Message card
-// ---------------------------------------------------------------------------
 
 class _MessageCard extends StatelessWidget {
   final FlirtProvider provider;
@@ -576,43 +536,37 @@ class _MessageCard extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        color: const Color(0xFF1C1C1E),
+        color: AppTheme.surface,
         border: Border.all(
-          color: cat.gradientColors.last.withValues(alpha: 0.28),
-          width: 1,
+          color: AppTheme.cardBorder,
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: cat.gradientColors.last.withValues(alpha: 0.15),
-            blurRadius: 28,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.40),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Stack(children: [
-        // Decorative quotation mark — uses category accent color
         Positioned(
           top: 12, left: 16,
           child: Icon(
             CupertinoIcons.quote_bubble,
             size: 52,
-            color: cat.gradientColors.last.withValues(alpha: 0.09),
+            color: AppTheme.primary.withValues(alpha: 0.06),
           ),
         ),
-        // Subtle radial glow bottom-right
+        // Glow
         Positioned(
-          bottom: 0, right: 0,
+          bottom: -20, right: -20,
           child: Container(
-            width: 140, height: 140,
+            width: 160, height: 160,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(colors: [
-                cat.gradientColors.last.withValues(alpha: 0.07),
+                AppTheme.primary.withValues(alpha: 0.04),
                 Colors.transparent,
               ]),
             ),
@@ -621,7 +575,7 @@ class _MessageCard extends StatelessWidget {
         // Content
         Center(
           child: Padding(
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(32),
             child: _buildContent(),
           ),
         ),
@@ -639,32 +593,37 @@ class _MessageCard extends StatelessWidget {
           const Icon(
             CupertinoIcons.exclamationmark_circle,
             size: 40,
-            color: Color(0xFF8E8E93),
+            color: AppTheme.textMuted,
           ),
           const SizedBox(height: 14),
           Text(
             'Something went wrong',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 18,
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             provider.errorMessage,
             style: GoogleFonts.inter(
-              fontSize: 12,
-              color: const Color(0xFF8E8E93),
+              fontSize: 13,
+              color: AppTheme.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap "New Line" to try again',
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              color: const Color(0xFF636366),
+          const SizedBox(height: 12),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => provider.generateLine(),
+            child: Text(
+              'Tap to retry',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ]);
@@ -685,11 +644,12 @@ class _MessageCard extends StatelessWidget {
           child: Text(
             provider.currentMessage,
             key: ValueKey(provider.currentMessage),
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              color: Colors.white,
-              height: 1.65,
-              fontWeight: FontWeight.w400,
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 20,
+              color: AppTheme.textPrimary,
+              height: 1.6,
+              fontWeight: FontWeight.w500,
+              fontStyle: FontStyle.italic,
             ),
             textAlign: TextAlign.center,
           ),
@@ -697,20 +657,18 @@ class _MessageCard extends StatelessWidget {
 
       default:
         return Text(
-          'Tap "New Line" to begin',
+          'TAP "NEW LINE" TO BEGIN',
           style: GoogleFonts.inter(
-            fontSize: 15,
-            color: const Color(0xFF8E8E93),
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+            color: AppTheme.textMuted,
           ),
           textAlign: TextAlign.center,
         );
     }
   }
 }
-
-// ---------------------------------------------------------------------------
-// History navigation button
-// ---------------------------------------------------------------------------
 
 class _NavBtn extends StatelessWidget {
   final IconData icon;
@@ -728,28 +686,24 @@ class _NavBtn extends StatelessWidget {
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: AnimatedOpacity(
-        opacity: enabled ? 1.0 : 0.28,
+        opacity: enabled ? 1.0 : 0.2,
         duration: 200.ms,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
-            color: const Color(0xFF1C1C1E),
+            color: AppTheme.surfaceLight,
             border: Border.all(
-              color: const Color(0xFF38383A),
+              color: AppTheme.cardBorder,
               width: 0.5,
             ),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: const Color(0xFF8E8E93), size: 18),
+          child: Icon(icon, color: AppTheme.textPrimary, size: 18),
         ),
       ),
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Action button
-// ---------------------------------------------------------------------------
 
 class _ActionBtn extends StatelessWidget {
   final IconData icon;
@@ -777,26 +731,23 @@ class _ActionBtn extends StatelessWidget {
           opacity: enabled ? 1.0 : 0.35,
           duration: 200.ms,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 13),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
               gradient: isPrimary && gradient != null
                   ? LinearGradient(colors: gradient!)
                   : null,
-              color: isPrimary ? null : const Color(0xFF1C1C1E),
+              color: isPrimary ? null : AppTheme.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isPrimary
-                    ? Colors.transparent
-                    : const Color(0xFF38383A),
+                color: isPrimary ? Colors.transparent : AppTheme.cardBorder,
                 width: 0.5,
               ),
               boxShadow: isPrimary
                   ? [
                 BoxShadow(
-                  color: (gradient?.last ?? const Color(0xFF007AFF))
-                      .withValues(alpha: 0.28),
-                  blurRadius: 14,
-                  offset: const Offset(0, 5),
+                  color: AppTheme.primaryDark.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
               ]
                   : null,
@@ -804,17 +755,17 @@ class _ActionBtn extends StatelessWidget {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Icon(
                 icon,
-                color: isPrimary ? Colors.white : const Color(0xFF8E8E93),
-                size: 21,
+                color: isPrimary ? AppTheme.background : AppTheme.textPrimary,
+                size: 20,
               ),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: GoogleFonts.inter(
-                  fontSize: 11.5,
-                  color: isPrimary ? Colors.white : const Color(0xFF8E8E93),
-                  fontWeight:
-                  isPrimary ? FontWeight.w600 : FontWeight.w400,
+                  fontSize: 10,
+                  color: isPrimary ? AppTheme.background : AppTheme.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
                 ),
               ),
             ]),

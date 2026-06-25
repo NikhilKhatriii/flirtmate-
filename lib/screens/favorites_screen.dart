@@ -6,18 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/flirt_provider.dart';
-
-// ---------------------------------------------------------------------------
-// Apple-style design tokens
-//   Background        #000000
-//   Elevated surface  #1C1C1E
-//   Card border       #38383A
-//   Label primary     #FFFFFF
-//   Label secondary   #8E8E93
-//   Separator         #38383A
-//   System blue       #007AFF
-//   Destructive red   #FF3B30  (iOS system red — delete only)
-// ---------------------------------------------------------------------------
+import '../theme/app_theme.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -34,40 +23,40 @@ class FavoritesScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Column(children: [
-          // ----------------------------------------------------------------
           // Navigation bar
-          // ----------------------------------------------------------------
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 12, 20, 0),
             child: Row(children: [
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: const Icon(
+                child: Icon(
                   CupertinoIcons.chevron_left,
-                  color: Color(0xFF007AFF),
+                  color: AppTheme.primary,
                   size: 20,
                 ),
               ),
               Text(
                 'Favorites',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.playfairDisplay(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AppTheme.textPrimary,
                   letterSpacing: -0.4,
                 ),
               ),
               const Spacer(),
               if (favorites.isNotEmpty)
                 Text(
-                  '${favorites.length} saved',
+                  '${favorites.length} SAVED',
                   style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: const Color(0xFF8E8E93),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: AppTheme.textSecondary,
                   ),
                 ),
             ]),
@@ -75,9 +64,7 @@ class FavoritesScreen extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // ----------------------------------------------------------------
           // Content
-          // ----------------------------------------------------------------
           Expanded(
             child: favorites.isEmpty
                 ? const _EmptyState()
@@ -103,10 +90,6 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Group header + list of items for one category
-// ---------------------------------------------------------------------------
 
 class _FavoriteGroup extends StatelessWidget {
   final int catIconCodePoint;
@@ -151,15 +134,15 @@ class _FavoriteGroup extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
           child: Row(children: [
-            Icon(icon, size: 15, color: const Color(0xFF8E8E93)),
-            const SizedBox(width: 6),
+            Icon(icon, size: 14, color: AppTheme.primary),
+            const SizedBox(width: 8),
             Text(
               catName.toUpperCase(),
               style: GoogleFonts.inter(
                 fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF8E8E93),
-                letterSpacing: 0.8,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textSecondary,
+                letterSpacing: 1.2,
               ),
             ),
             const SizedBox(width: 6),
@@ -167,12 +150,12 @@ class _FavoriteGroup extends StatelessWidget {
               '${items.length}',
               style: GoogleFonts.inter(
                 fontSize: 11,
-                color: const Color(0xFF636366),
+                color: AppTheme.textMuted,
               ),
             ),
             const SizedBox(width: 8),
             const Expanded(
-              child: Divider(color: Color(0xFF38383A), thickness: 0.5),
+              child: Divider(color: AppTheme.cardBorder, thickness: 0.5),
             ),
           ]),
         ),
@@ -188,10 +171,6 @@ class _FavoriteGroup extends StatelessWidget {
     ).animate(delay: (groupIndex * 60).ms).fadeIn(duration: 350.ms).slideY(begin: 0.1);
   }
 }
-
-// ---------------------------------------------------------------------------
-// Individual favorite card — swipe-to-delete + action buttons
-// ---------------------------------------------------------------------------
 
 class _FavoriteItem extends StatelessWidget {
   final dynamic item;
@@ -216,7 +195,7 @@ class _FavoriteItem extends StatelessWidget {
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFFF3B30).withValues(alpha: 0.15),
+          color: const Color(0xFFFF3B30).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Icon(
@@ -228,21 +207,20 @@ class _FavoriteItem extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF1C1C1E),
+          color: AppTheme.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: const Color(0xFF38383A),
-            width: 0.5,
+            color: AppTheme.cardBorder,
+            width: 1,
           ),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Quote icon — replaces 💬 emoji
             const Icon(
               CupertinoIcons.text_quote,
               size: 15,
-              color: Color(0xFF636366),
+              color: AppTheme.primary,
             ),
             const SizedBox(width: 10),
 
@@ -255,26 +233,27 @@ class _FavoriteItem extends StatelessWidget {
                     item.message,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       height: 1.55,
                     ),
                   ),
-                  // Arc stage label (e.g. "Follow-up") if present
                   if (item.arcStageLabel != null) ...[
                     const SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF007AFF).withValues(alpha: 0.12),
+                        color: AppTheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2), width: 0.5),
                       ),
                       child: Text(
-                        item.arcStageLabel!,
+                        item.arcStageLabel!.toUpperCase(),
                         style: GoogleFonts.inter(
-                          fontSize: 10,
-                          color: const Color(0xFF007AFF),
-                          fontWeight: FontWeight.w500,
+                          fontSize: 9,
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
@@ -295,18 +274,14 @@ class _FavoriteItem extends StatelessWidget {
                     SnackBar(
                       content: Row(children: [
                         const Icon(CupertinoIcons.checkmark_circle,
-                            color: Colors.white, size: 15),
+                            color: AppTheme.background, size: 15),
                         const SizedBox(width: 8),
                         Text('Copied',
                             style: GoogleFonts.inter(
-                                fontSize: 13, color: Colors.white)),
+                                fontSize: 13, color: AppTheme.background, fontWeight: FontWeight.w600)),
                       ]),
                       duration: 1500.ms,
-                      behavior: SnackBarBehavior.floating,
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      backgroundColor: const Color(0xFF2C2C2E),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: AppTheme.primary,
                     ),
                   );
                 },
@@ -319,7 +294,7 @@ class _FavoriteItem extends StatelessWidget {
               const SizedBox(height: 4),
               _IconBtn(
                 icon: CupertinoIcons.delete,
-                color: const Color(0xFFFF3B30).withValues(alpha: 0.55),
+                color: const Color(0xFFFF3B30).withValues(alpha: 0.7),
                 onTap: () => onDelete(item.id),
               ),
             ]),
@@ -332,10 +307,6 @@ class _FavoriteItem extends StatelessWidget {
         .slideX(begin: 0.08);
   }
 }
-
-// ---------------------------------------------------------------------------
-// Tappable icon button
-// ---------------------------------------------------------------------------
 
 class _IconBtn extends StatelessWidget {
   final IconData icon;
@@ -352,14 +323,10 @@ class _IconBtn extends StatelessWidget {
     child: Icon(
       icon,
       size: 17,
-      color: color ?? const Color(0xFF8E8E93),
+      color: color ?? AppTheme.textSecondary,
     ),
   );
 }
-
-// ---------------------------------------------------------------------------
-// Empty state
-// ---------------------------------------------------------------------------
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
@@ -368,22 +335,22 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        // Animated heart icon — replaces 💔 emoji
         Container(
           width: 80, height: 80,
           decoration: BoxDecoration(
-            color: const Color(0xFF1C1C1E),
+            color: AppTheme.surface,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.cardBorder),
           ),
           child: const Icon(
             CupertinoIcons.heart_slash,
             size: 38,
-            color: Color(0xFF636366),
+            color: AppTheme.textMuted,
           ),
         )
             .animate(onPlay: (c) => c.repeat(reverse: true))
             .scaleXY(
-            begin: 0.92,
+            begin: 0.95,
             end: 1.05,
             duration: 1600.ms,
             curve: Curves.easeInOut),
@@ -392,10 +359,10 @@ class _EmptyState extends StatelessWidget {
 
         Text(
           'No favorites yet',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.playfairDisplay(
             fontSize: 20,
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w700,
             letterSpacing: -0.3,
           ),
         ),
@@ -404,7 +371,7 @@ class _EmptyState extends StatelessWidget {
           'Generate lines and tap the heart\nto save your favorites here.',
           style: GoogleFonts.inter(
             fontSize: 14,
-            color: const Color(0xFF8E8E93),
+            color: AppTheme.textSecondary,
             height: 1.6,
           ),
           textAlign: TextAlign.center,

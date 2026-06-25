@@ -1,21 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../theme/app_theme.dart';
 import '../widgets/gradient_text.dart';
 import 'category_screen.dart';
-
-// Professional, Apple-inspired palette — kept local to this screen
-// so it doesn't depend on the app-wide pink/purple theme.
-class _Palette {
-  static const Color background = Color(0xFF0B0B0D);
-  static const Color backgroundLight = Color(0xFF1C1C1E);
-  static const Color accent = Color(0xFF0A84FF); // iOS system blue
-  static const Color accentDark = Color(0xFF0060DB);
-  static const Color textPrimary = Color(0xFFF5F5F7);
-  static const Color textSecondary = Color(0xFFAEAEB2);
-  static const Color textMuted = Color(0xFF6E6E73);
-  static const Color divider = Color(0xFF2C2C2E);
-}
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -51,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [_Palette.backgroundLight, _Palette.background],
+            colors: [AppTheme.surfaceLight, AppTheme.background],
           ),
         ),
         child: SafeArea(
@@ -59,7 +47,6 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App icon mark
                 AnimatedBuilder(
                   animation: _pulseAnim,
                   builder: (_, __) => Transform.scale(
@@ -72,11 +59,11 @@ class _SplashScreenState extends State<SplashScreen>
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [_Palette.accent, _Palette.accentDark],
+                          colors: [AppTheme.primary, AppTheme.primaryDark],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: _Palette.accent.withValues(alpha: 0.35),
+                            color: AppTheme.primary.withValues(alpha: 0.35),
                             blurRadius: 36,
                             spreadRadius: 4,
                           ),
@@ -93,10 +80,9 @@ class _SplashScreenState extends State<SplashScreen>
 
                 const SizedBox(height: 28),
 
-                // App name
                 GradientText(
                   'FlirtMate',
-                  colors: const [_Palette.textPrimary, _Palette.textSecondary],
+                  colors: const [AppTheme.textPrimary, AppTheme.textSecondary],
                   style: GoogleFonts.inter(
                     fontSize: 44,
                     fontWeight: FontWeight.w700,
@@ -110,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen>
                   'Say it better. Say it right.',
                   style: GoogleFonts.inter(
                     fontSize: 15,
-                    color: _Palette.textSecondary,
+                    color: AppTheme.textSecondary,
                     fontWeight: FontWeight.w400,
                     letterSpacing: 0.2,
                   ),
@@ -118,25 +104,24 @@ class _SplashScreenState extends State<SplashScreen>
 
                 const SizedBox(height: 14),
 
-                // Feature badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: _Palette.divider),
+                    border: Border.all(color: AppTheme.cardBorder),
                     borderRadius: BorderRadius.circular(20),
-                    color: _Palette.backgroundLight.withValues(alpha: 0.6),
+                    color: AppTheme.surfaceLight.withValues(alpha: 0.6),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.auto_awesome_rounded,
-                          size: 14, color: _Palette.accent),
+                          size: 14, color: AppTheme.primary),
                       const SizedBox(width: 8),
                       Text(
                         '14 MOODS · INFINITE LINES',
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: _Palette.textSecondary,
+                          color: AppTheme.textSecondary,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 1.0,
                         ),
@@ -147,7 +132,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                 const SizedBox(height: 56),
 
-                // Get Started button
                 _GetStartedButton(
                   onTap: () => Navigator.pushReplacement(
                       context, MaterialPageRoute(builder: (_) => const CategoryScreen())),
@@ -159,7 +143,7 @@ class _SplashScreenState extends State<SplashScreen>
                   '14 moods · Always fresh · Always free',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: _Palette.textMuted,
+                    color: AppTheme.textMuted,
                     fontWeight: FontWeight.w400,
                   ),
                 ).animate(delay: 900.ms).fadeIn(),
@@ -213,11 +197,11 @@ class _GetStartedButtonState extends State<_GetStartedButton>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 17),
           decoration: BoxDecoration(
-            color: _Palette.accent,
+            color: AppTheme.primary,
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: _Palette.accent.withValues(alpha: 0.35),
+                color: AppTheme.primary.withValues(alpha: 0.35),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),

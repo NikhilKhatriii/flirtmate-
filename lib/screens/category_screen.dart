@@ -5,212 +5,97 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/flirt_category.dart';
 import '../providers/flirt_provider.dart';
+import '../providers/language_provider.dart';
+import '../widgets/theme_selector_sheet.dart';
+import '../widgets/language_selector_sheet.dart';
 import 'generator_screen.dart';
 import 'favorites_screen.dart';
 import 'mood_mixer_screen.dart';
-
-// ---------------------------------------------------------------------------
-// Apple-style design tokens (local — mirrors app_theme.dart conventions)
-//
-//   Background       #000000 / #1C1C1E   iOS primary / elevated surface
-//   Label primary    #FFFFFF
-//   Label secondary  #EBEBF5 @ 60% → #8E8E93
-//   Separator        #38383A
-//   System blue      #007AFF             primary action / tint
-//   System blue dark #0051A8             gradient deep stop
-//   Card surface     #1C1C1E
-// ---------------------------------------------------------------------------
 
 class CategoryScreen extends StatelessWidget {
   const CategoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     final favCount = context.watch<FlirtProvider>().favorites.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),
       body: SafeArea(
         child: Column(children: [
-          // ----------------------------------------------------------------
-          // Navigation bar — Apple large-title style
-          // ----------------------------------------------------------------
+          // Navigation bar
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
             child: Row(children: [
-              Text(
-                'FlirtMate',
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.4,
-                ),
+              Text(lp.translate('app_name'),
+                style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary),
               ),
               const Spacer(),
-              // Favorites button with badge
+              _ActionIcon(icon: CupertinoIcons.globe, onTap: () => showLanguageSelector(context)),
+              _ActionIcon(icon: CupertinoIcons.paintbrush, onTap: () => showThemeSelector(context)),
               Stack(clipBehavior: Clip.none, children: [
-                CupertinoButton(
-                  padding: const EdgeInsets.all(10),
-                  onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const FavoritesScreen())),
-                  child: const Icon(
-                    CupertinoIcons.heart,
-                    color: Color(0xFF007AFF),
-                    size: 22,
-                  ),
-                ),
+                _ActionIcon(icon: CupertinoIcons.heart, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
                 if (favCount > 0)
-                  Positioned(
-                    top: 6, right: 6,
-                    child: Container(
-                      width: 16, height: 16,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF007AFF),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$favCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  Positioned(top: 6, right: 6, child: _Badge(count: favCount)),
               ]),
             ]),
           ),
 
-          // ----------------------------------------------------------------
-          // Large title block
-          // ----------------------------------------------------------------
+          // Adaptive Large title block
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(
-                'Choose Your',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: const Color(0xFF8E8E93),
-                  letterSpacing: 0.6,
-                  fontWeight: FontWeight.w500,
-                ),
+              Text(lp.translate('choose_style'),
+                style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF8E95A0), letterSpacing: 1.2, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 2),
-              Text(
-                'Flirt Style',
-                style: GoogleFonts.inter(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.8,
-                ),
+              Text(lp.translate('flirt_style'),
+                style: GoogleFonts.playfairDisplay(fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.5),
               ),
               const SizedBox(height: 5),
-              Text(
-                'A fresh line for every mood, every time',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: const Color(0xFF8E8E93),
-                ),
+              Text(lp.translate('tagline'),
+                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF8E95A0)),
               ),
             ]),
           ),
 
-          // ----------------------------------------------------------------
-          // Mood Mixer entry point — system blue, no pink/purple
-          // ----------------------------------------------------------------
+          // Mood Mixer with relative sizing
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
             child: GestureDetector(
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const MoodMixerScreen())),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoodMixerScreen())),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0051A8), Color(0xFF007AFF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF007AFF).withValues(alpha: 0.30),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
+                  gradient: LinearGradient(colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.primary]),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(children: [
-                  Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.slider_horizontal_3,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
+                  const Icon(CupertinoIcons.slider_horizontal_3, color: Colors.black, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(
-                        'Mood Mixer',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      Text(
-                        'Blend any 2 styles into something new',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.70),
-                        ),
-                      ),
+                      Text(lp.translate('mood_mixer'), style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black)),
+                      Text(lp.translate('mood_mixer_desc'), style: GoogleFonts.inter(fontSize: 11, color: Colors.black54)),
                     ]),
                   ),
-                  const Icon(
-                    CupertinoIcons.chevron_right,
-                    color: Colors.white54,
-                    size: 16,
-                  ),
+                  const Icon(CupertinoIcons.chevron_right, color: Colors.black45, size: 16),
                 ]),
               ),
             ),
           ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.05),
 
-          // ----------------------------------------------------------------
-          // Category grid
-          // ----------------------------------------------------------------
+          // Enterprise Grid Architecture (Adaptive & Responsive)
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.88,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 220, // Adaptive sizing
+                crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.9,
               ),
               itemCount: kCategories.length,
-              itemBuilder: (ctx, i) => _CategoryCard(
-                category: kCategories[i],
-                index: i,
-              ),
+              itemBuilder: (ctx, i) => _CategoryCard(category: kCategories[i], index: i),
             ),
           ),
         ]),
@@ -219,182 +104,68 @@ class CategoryScreen extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Category card
-// ---------------------------------------------------------------------------
-
-class _CategoryCard extends StatefulWidget {
+class _CategoryCard extends StatelessWidget {
   final FlirtCategory category;
   final int index;
   const _CategoryCard({required this.category, required this.index});
 
   @override
-  State<_CategoryCard> createState() => _CategoryCardState();
-}
-
-class _CategoryCardState extends State<_CategoryCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: 150.ms);
-    _scale = Tween<double>(begin: 1.0, end: 0.96)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cat = widget.category;
-    final isAi = context.watch<FlirtProvider>().isAiAvailable;
+    final lp = context.watch<LanguageProvider>();
+    final accent = Theme.of(context).colorScheme.primary;
 
-    return AnimatedBuilder(
-      animation: _scale,
-      builder: (_, child) => Transform.scale(scale: _scale.value, child: child),
-      child: GestureDetector(
-        onTapDown: (_) => _ctrl.forward(),
-        onTapUp: (_) {
-          _ctrl.reverse();
-          context.read<FlirtProvider>().selectCategory(cat);
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const GeneratorScreen()));
-        },
-        onTapCancel: () => _ctrl.reverse(),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: cat.gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.07),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: cat.gradientColors.last.withValues(alpha: 0.28),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
+    return GestureDetector(
+      onTap: () {
+        context.read<FlirtProvider>().selectCategory(category);
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const GeneratorScreen()));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF14171C), // Strictly surface color
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: accent.withValues(alpha: 0.15), width: 1), // Requirement 3: Thin accent border
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Subtle tinted icon background (Requirement 3)
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                child: Icon(category.icon, color: accent, size: 20),
+              ),
+              const Spacer(),
+              // Flexible text handling (Requirement 4)
+              Text(lp.translate(category.id),
+                style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+                maxLines: 1, overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(lp.translate('${category.id}_desc'),
+                style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF8E95A0), height: 1.3),
+                maxLines: 2, overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
-          child: Stack(children: [
-            // Subtle top-edge shine (Apple card convention)
-            Positioned(
-              top: 0, left: 0, right: 0,
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(18),
-                  ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.10),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Mode badge — SF-style pill, honest about AI availability
-            Positioned(
-              top: 10, right: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.28),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(
-                    isAi
-                        ? CupertinoIcons.sparkles
-                        : CupertinoIcons.infinite,
-                    color: Colors.white70,
-                    size: 9,
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    isAi ? 'AI' : '∞',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-                ]),
-              ),
-            ),
-
-            // Card content
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Icon in a frosted pill — replaces emoji
-                  Container(
-                    width: 42, height: 42,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      cat.icon,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    cat.name,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    cat.tagline,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: Colors.white.withValues(alpha: 0.60),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    cat.description,
-                    style: GoogleFonts.inter(
-                      fontSize: 10.5,
-                      color: Colors.white.withValues(alpha: 0.50),
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ]),
         ),
       ),
-    ).animate(delay: (widget.index * 40).ms)
-        .fadeIn(duration: 400.ms)
-        .slideY(begin: 0.12, duration: 400.ms, curve: Curves.easeOut);
+    ).animate(delay: (index * 40).ms).fadeIn(duration: 400.ms).scale(begin: const Offset(0.9, 0.9));
   }
+}
+
+class _ActionIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ActionIcon({required this.icon, required this.onTap});
+  @override
+  Widget build(BuildContext context) => CupertinoButton(padding: const EdgeInsets.all(10), onPressed: onTap, child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20));
+}
+
+class _Badge extends StatelessWidget {
+  final int count;
+  const _Badge({required this.count});
+  @override
+  Widget build(BuildContext context) => Container(width: 16, height: 16, decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle), child: Center(child: Text('$count', style: const TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w700))));
 }

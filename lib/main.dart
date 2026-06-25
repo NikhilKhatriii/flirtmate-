@@ -2,18 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/flirt_provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/language_provider.dart';
 import 'screens/splash_screen.dart';
-import 'theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: AppTheme.background,
-  ));
-  runApp(const FlirtMateApp());
+  
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FlirtProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+      ],
+      child: const FlirtMateApp(),
+    ),
+  );
 }
 
 class FlirtMateApp extends StatelessWidget {
@@ -21,14 +27,15 @@ class FlirtMateApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => FlirtProvider(),
-      child: MaterialApp(
-        title: 'FlirtMate',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.theme,
-        home: const SplashScreen(),
-      ),
+    final themeProvider = context.watch<ThemeProvider>();
+    
+    return MaterialApp(
+      title: 'FlirtMate',
+      debugShowCheckedModeBanner: false,
+      theme: themeProvider.themeData,
+      // Localization is handled reactively by LanguageProvider
+      // rather than standard delegate approach to support "Zero-Reboot"
+      home: const SplashScreen(),
     );
   }
 }
