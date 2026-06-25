@@ -9,12 +9,31 @@ import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/shimmer_loading.dart';
 import '../widgets/gradient_text.dart';
+import '../widgets/personalize_sheet.dart';
 import 'favorites_screen.dart';
 
 class GeneratorScreen extends StatefulWidget {
   const GeneratorScreen({super.key});
   @override
   State<GeneratorScreen> createState() => _GeneratorScreenState();
+}
+
+/// Builds a short, readable summary of the active personalization/vibe for
+/// the badge row, e.g. "For Maya · loves hiking", "For Maya", "Just met",
+/// or "About: plays guitar · Reconnecting" when multiple are set.
+String _personalizationSummary(FlirtProvider provider) {
+  final name = provider.targetName;
+  final trait = provider.targetTrait;
+  final parts = <String>[];
+  if (name.isNotEmpty && trait.isNotEmpty) {
+    parts.add('For $name · $trait');
+  } else if (name.isNotEmpty) {
+    parts.add('For $name');
+  } else if (trait.isNotEmpty) {
+    parts.add('About: $trait');
+  }
+  if (provider.hasVibe) parts.add(provider.selectedVibe.label);
+  return parts.join(' · ');
 }
 
 class _GeneratorScreenState extends State<GeneratorScreen>
@@ -75,7 +94,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 GradientText(cat.emoji + ' ' + cat.name,
                   colors: cat.gradientColors,
                   style: GoogleFonts.playfairDisplay(
-                    fontSize: 19, fontWeight: FontWeight.w700),
+                      fontSize: 19, fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
                 Stack(children: [
@@ -83,17 +102,17 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     icon: const Icon(Icons.favorite_rounded),
                     color: AppTheme.primaryLight,
                     onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const FavoritesScreen())),
+                        MaterialPageRoute(builder: (_) => const FavoritesScreen())),
                   ),
                   if (favCount > 0) Positioned(
                     top: 6, right: 6,
                     child: Container(
                       width: 16, height: 16,
                       decoration: const BoxDecoration(
-                        color: AppTheme.primary, shape: BoxShape.circle),
+                          color: AppTheme.primary, shape: BoxShape.circle),
                       child: Center(child: Text('$favCount',
-                        style: const TextStyle(color: Colors.white, fontSize: 9,
-                          fontWeight: FontWeight.bold))),
+                          style: const TextStyle(color: Colors.white, fontSize: 9,
+                              fontWeight: FontWeight.bold))),
                     ),
                   ),
                 ]),
@@ -111,10 +130,10 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                   const SizedBox(width: 12),
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(cat.tagline, style: GoogleFonts.lato(
-                      fontSize: 11, color: AppTheme.textMuted,
-                      letterSpacing: 1, fontWeight: FontWeight.w600)),
+                        fontSize: 11, color: AppTheme.textMuted,
+                        letterSpacing: 1, fontWeight: FontWeight.w600)),
                     Text(cat.description, style: GoogleFonts.lato(
-                      fontSize: 12, color: AppTheme.textSecondary)),
+                        fontSize: 12, color: AppTheme.textSecondary)),
                   ]),
                   const Spacer(),
                   Container(
@@ -126,12 +145,70 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                       ]),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text('∞ AI', style: GoogleFonts.lato(
-                      fontSize: 11, color: Colors.white, fontWeight: FontWeight.w800)),
+                    child: Text(
+                        provider.isMixed
+                            ? '🧪 MIX'
+                            : (provider.isAiAvailable
+                            ? (provider.lastLineWasAi ? '✨ AI' : '✨ AI · offline')
+                            : '∞'),
+                        style: GoogleFonts.lato(
+                            fontSize: 11, color: Colors.white, fontWeight: FontWeight.w800)),
                   ),
                 ]),
               ),
             ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1),
+
+            // Personalize entry point
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+              child: GestureDetector(
+                onTap: () => showPersonalizeSheet(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: provider.isCustomized
+                        ? AppTheme.primary.withOpacity(0.12)
+                        : AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: provider.isCustomized
+                          ? AppTheme.primary.withOpacity(0.4)
+                          : AppTheme.cardBorder,
+                    ),
+                  ),
+                  child: Row(children: [
+                    Icon(
+                      provider.isCustomized
+                          ? Icons.favorite_rounded
+                          : Icons.edit_note_rounded,
+                      size: 17,
+                      color: provider.isCustomized
+                          ? AppTheme.primaryLight
+                          : AppTheme.textMuted,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        provider.isCustomized
+                            ? _personalizationSummary(provider)
+                            : 'Personalize with a name, detail, or vibe',
+                        style: GoogleFonts.lato(
+                          fontSize: 12.5,
+                          color: provider.isCustomized
+                              ? AppTheme.textPrimary
+                              : AppTheme.textMuted,
+                          fontWeight: provider.isCustomized
+                              ? FontWeight.w600 : FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded,
+                        size: 18, color: AppTheme.textMuted),
+                  ]),
+                ),
+              ),
+            ),
 
             // History nav
             if (provider.historyCount > 0)
@@ -186,7 +263,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 const Icon(Icons.swipe_rounded, color: AppTheme.textMuted, size: 14),
                 const SizedBox(width: 6),
                 Text('Swipe left for new · Swipe right for previous',
-                  style: GoogleFonts.lato(fontSize: 11, color: AppTheme.textMuted)),
+                    style: GoogleFonts.lato(fontSize: 11, color: AppTheme.textMuted)),
               ]),
             ),
 
@@ -277,22 +354,22 @@ class _MessageCard extends StatelessWidget {
           ],
         ),
         border: Border.all(
-          color: cat.gradientColors.last.withOpacity(0.35), width: 1.5),
+            color: cat.gradientColors.last.withOpacity(0.35), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: cat.gradientColors.last.withOpacity(0.2),
-            blurRadius: 30, offset: const Offset(0, 10)),
+              color: cat.gradientColors.last.withOpacity(0.2),
+              blurRadius: 30, offset: const Offset(0, 10)),
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20, offset: const Offset(0, 5)),
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20, offset: const Offset(0, 5)),
         ],
       ),
       child: Stack(children: [
         // Decorative quote mark
         Positioned(top: 14, left: 18,
-          child: Text('"', style: GoogleFonts.playfairDisplay(
-            fontSize: 80, color: cat.gradientColors.last.withOpacity(0.12),
-            height: 1))),
+            child: Text('"', style: GoogleFonts.playfairDisplay(
+                fontSize: 80, color: cat.gradientColors.last.withOpacity(0.12),
+                height: 1))),
         // Glow
         Positioned(bottom: 0, right: 0,
           child: Container(width: 150, height: 150,
@@ -323,14 +400,14 @@ class _MessageCard extends StatelessWidget {
         return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           const Text('😕', style: TextStyle(fontSize: 40)),
           const SizedBox(height: 14),
-          Text('Could not connect', style: GoogleFonts.lato(
-            fontSize: 16, color: AppTheme.textSecondary)),
+          Text('Something went wrong', style: GoogleFonts.lato(
+              fontSize: 16, color: AppTheme.textSecondary)),
           const SizedBox(height: 8),
           Text(provider.errorMessage, style: GoogleFonts.lato(
-            fontSize: 12, color: AppTheme.textMuted), textAlign: TextAlign.center),
+              fontSize: 12, color: AppTheme.textMuted), textAlign: TextAlign.center),
           const SizedBox(height: 8),
-          Text('Check your API key & internet', style: GoogleFonts.lato(
-            fontSize: 11, color: AppTheme.textMuted)),
+          Text('Tap "New Line" to try again', style: GoogleFonts.lato(
+              fontSize: 11, color: AppTheme.textMuted)),
         ]);
       case GeneratorState.success:
         return AnimatedSwitcher(
@@ -346,15 +423,15 @@ class _MessageCard extends StatelessWidget {
           child: Text(provider.currentMessage,
             key: ValueKey(provider.currentMessage),
             style: GoogleFonts.playfairDisplay(
-              fontSize: 19, color: AppTheme.textPrimary,
-              height: 1.65, fontStyle: FontStyle.italic),
+                fontSize: 19, color: AppTheme.textPrimary,
+                height: 1.65, fontStyle: FontStyle.italic),
             textAlign: TextAlign.center,
           ),
         );
       default:
         return Text('Tap "New Line" to begin',
-          style: GoogleFonts.lato(fontSize: 15, color: AppTheme.textMuted),
-          textAlign: TextAlign.center);
+            style: GoogleFonts.lato(fontSize: 15, color: AppTheme.textMuted),
+            textAlign: TextAlign.center);
     }
   }
 }
@@ -427,12 +504,12 @@ class _ActionBtn extends StatelessWidget {
             ),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Icon(icon,
-                color: isPrimary ? Colors.white : AppTheme.textSecondary, size: 22),
+                  color: isPrimary ? Colors.white : AppTheme.textSecondary, size: 22),
               const SizedBox(height: 4),
               Text(label, style: GoogleFonts.lato(
-                fontSize: 11.5,
-                color: isPrimary ? Colors.white : AppTheme.textSecondary,
-                fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500)),
+                  fontSize: 11.5,
+                  color: isPrimary ? Colors.white : AppTheme.textSecondary,
+                  fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500)),
             ]),
           ),
         ),

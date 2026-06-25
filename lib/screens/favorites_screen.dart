@@ -43,13 +43,13 @@ class FavoritesScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 GradientText('❤️ Favorites',
-                  colors: const [AppTheme.primary, AppTheme.primaryLight],
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 22, fontWeight: FontWeight.w700)),
+                    colors: const [AppTheme.primary, AppTheme.primaryLight],
+                    style: GoogleFonts.playfairDisplay(
+                        fontSize: 22, fontWeight: FontWeight.w700)),
                 const Spacer(),
                 if (favorites.isNotEmpty)
                   Text('${favorites.length} saved',
-                    style: GoogleFonts.lato(fontSize: 12, color: AppTheme.textMuted)),
+                      style: GoogleFonts.lato(fontSize: 12, color: AppTheme.textMuted)),
               ]),
             ),
 
@@ -60,21 +60,21 @@ class FavoritesScreen extends StatelessWidget {
               child: favorites.isEmpty
                   ? _EmptyState()
                   : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                      itemCount: grouped.keys.length,
-                      itemBuilder: (ctx, i) {
-                        final catId = grouped.keys.elementAt(i);
-                        final items = grouped[catId]!;
-                        final first = items.first;
-                        return _FavoriteGroup(
-                          catEmoji: first.catEmoji,
-                          catName: first.catName,
-                          items: items.cast(),
-                          groupIndex: i,
-                          onDelete: (id) => provider.deleteFavorite(id),
-                        );
-                      },
-                    ),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                itemCount: grouped.keys.length,
+                itemBuilder: (ctx, i) {
+                  final catId = grouped.keys.elementAt(i);
+                  final items = grouped[catId]!;
+                  final first = items.first;
+                  return _FavoriteGroup(
+                    catEmoji: first.catEmoji,
+                    catName: first.catName,
+                    items: items.cast(),
+                    groupIndex: i,
+                    onDelete: (id) => provider.deleteFavorite(id),
+                  );
+                },
+              ),
             ),
           ]),
         ),
@@ -105,11 +105,11 @@ class _FavoriteGroup extends StatelessWidget {
             Text(catEmoji, style: const TextStyle(fontSize: 18)),
             const SizedBox(width: 8),
             Text(catName, style: GoogleFonts.lato(
-              fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textMuted,
-              letterSpacing: 0.5)),
+                fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textMuted,
+                letterSpacing: 0.5)),
             const SizedBox(width: 8),
             Text('(${items.length})', style: GoogleFonts.lato(
-              fontSize: 11, color: AppTheme.textMuted)),
+                fontSize: 11, color: AppTheme.textMuted)),
             const Expanded(child: Divider(color: Color(0xFF2A2A4A), indent: 10)),
           ]),
         ),
@@ -164,9 +164,9 @@ class _FavoriteItem extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(item.message,
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 14, color: AppTheme.textPrimary,
-                  height: 1.55, fontStyle: FontStyle.italic)),
+                  style: GoogleFonts.playfairDisplay(
+                      fontSize: 14, color: AppTheme.textPrimary,
+                      height: 1.55, fontStyle: FontStyle.italic)),
             ),
             const SizedBox(width: 8),
             Column(children: [
@@ -211,7 +211,7 @@ class _IconBtn extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
     onTap: onTap,
     child: Icon(icon, size: 18,
-      color: color ?? AppTheme.textMuted.withOpacity(0.7)),
+        color: color ?? AppTheme.textMuted.withOpacity(0.7)),
   );
 }
 
@@ -225,11 +225,11 @@ class _EmptyState extends StatelessWidget {
             .scaleXY(begin: 0.9, end: 1.1, duration: 1500.ms, curve: Curves.easeInOut),
         const SizedBox(height: 24),
         Text('No favorites yet', style: GoogleFonts.playfairDisplay(
-          fontSize: 24, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
+            fontSize: 24, color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
         Text('Generate pickup lines and tap\n🤍 to save your favorites here',
-          style: GoogleFonts.lato(fontSize: 14, color: AppTheme.textMuted, height: 1.6),
-          textAlign: TextAlign.center),
+            style: GoogleFonts.lato(fontSize: 14, color: AppTheme.textMuted, height: 1.6),
+            textAlign: TextAlign.center),
       ]),
     );
   }

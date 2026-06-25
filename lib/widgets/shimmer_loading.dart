@@ -59,8 +59,8 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
         _PulsingDots(),
         const SizedBox(height: 8),
         Text('Crafting the perfect line...',
-          style: TextStyle(color: AppTheme.textMuted, fontSize: 13,
-              fontStyle: FontStyle.italic)),
+            style: TextStyle(color: AppTheme.textMuted, fontSize: 13,
+                fontStyle: FontStyle.italic)),
       ],
     );
   }
@@ -69,8 +69,8 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
     widthFactor: width,
     child: Container(
       height: 14, decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(7),
-      ),
+      color: Colors.white, borderRadius: BorderRadius.circular(7),
+    ),
     ),
   );
 }

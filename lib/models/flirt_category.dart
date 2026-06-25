@@ -50,6 +50,23 @@ class FavoriteMessage {
   );
 }
 
+/// Builds a synthetic "mixed" category by blending two real categories —
+/// used by the Mood Mixer feature. The id is deterministic and
+/// order-independent (sorted) so picking A+B or B+A reuses the same
+/// offline-queue cache slot.
+FlirtCategory buildMixedCategory(FlirtCategory a, FlirtCategory b) {
+  final ids = [a.id, b.id]..sort();
+  return FlirtCategory(
+    id: 'mix:${ids[0]}+${ids[1]}',
+    name: '${a.name} + ${b.name}',
+    emoji: '${a.emoji}${b.emoji}',
+    description: 'A blend of ${a.name.toLowerCase()} and ${b.name.toLowerCase()}',
+    tagline: 'Mixed mood',
+    gradientColors: [a.gradientColors.first, b.gradientColors.last],
+    styleHint: '${a.styleHint}; also blended with: ${b.styleHint}',
+  );
+}
+
 final List<FlirtCategory> kCategories = [
   FlirtCategory(
     id: 'romantic', name: 'Romantic', emoji: '🌹',

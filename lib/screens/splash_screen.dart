@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen>
     _heartCtrl = AnimationController(vsync: this, duration: 1200.ms)..repeat(reverse: true);
     _particleCtrl = AnimationController(vsync: this, duration: 6000.ms)..repeat();
     _heartAnim = Tween<double>(begin: 1.0, end: 1.22).animate(
-      CurvedAnimation(parent: _heartCtrl, curve: Curves.easeInOut));
+        CurvedAnimation(parent: _heartCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
                             )],
                           ),
                           child: const Text('💖', style: TextStyle(fontSize: 80),
-                            textAlign: TextAlign.center),
+                              textAlign: TextAlign.center),
                         ),
                       ),
                     ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.3),
@@ -105,9 +105,9 @@ class _SplashScreenState extends State<SplashScreen>
                         )).animate(onPlay: (c) => c.repeat(reverse: true))
                             .scaleXY(begin: 0.6, end: 1.2, duration: 800.ms),
                         const SizedBox(width: 8),
-                        Text('AI-POWERED · INFINITE LINES',
-                          style: GoogleFonts.lato(fontSize: 11, color: AppTheme.primary,
-                            fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                        Text('14 MOODS · INFINITE LINES',
+                            style: GoogleFonts.lato(fontSize: 11, color: AppTheme.primary,
+                                fontWeight: FontWeight.w800, letterSpacing: 1.2)),
                       ]),
                     ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
 
@@ -116,12 +116,12 @@ class _SplashScreenState extends State<SplashScreen>
                     // Get Started button
                     _GetStartedButton(
                       onTap: () => Navigator.pushReplacement(
-                        context, MaterialPageRoute(builder: (_) => const CategoryScreen())),
+                          context, MaterialPageRoute(builder: (_) => const CategoryScreen())),
                     ).animate(delay: 700.ms).fadeIn(duration: 600.ms).slideY(begin: 0.3),
 
                     const SizedBox(height: 24),
 
-                    Text('14 moods · Crafted by AI · Always original',
+                    Text('14 moods · Always fresh · Always free',
                       style: GoogleFonts.lato(fontSize: 12, color: AppTheme.textMuted),
                     ).animate(delay: 900.ms).fadeIn(),
                   ],
@@ -152,7 +152,7 @@ class _GetStartedButtonState extends State<_GetStartedButton>
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: 150.ms);
     _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+        CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
   @override

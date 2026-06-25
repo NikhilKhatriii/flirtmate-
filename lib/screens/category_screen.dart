@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../widgets/gradient_text.dart';
 import 'generator_screen.dart';
 import 'favorites_screen.dart';
+import 'mood_mixer_screen.dart';
 
 class CategoryScreen extends StatelessWidget {
   const CategoryScreen({super.key});
@@ -39,17 +40,17 @@ class CategoryScreen extends StatelessWidget {
                     icon: const Icon(Icons.favorite_rounded),
                     color: AppTheme.primaryLight,
                     onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const FavoritesScreen())),
+                        MaterialPageRoute(builder: (_) => const FavoritesScreen())),
                   ),
                   if (favCount > 0) Positioned(
                     top: 6, right: 6,
                     child: Container(
                       width: 16, height: 16,
                       decoration: const BoxDecoration(
-                        color: AppTheme.primary, shape: BoxShape.circle),
+                          color: AppTheme.primary, shape: BoxShape.circle),
                       child: Center(child: Text('$favCount',
-                        style: const TextStyle(color: Colors.white, fontSize: 9,
-                          fontWeight: FontWeight.bold))),
+                          style: const TextStyle(color: Colors.white, fontSize: 9,
+                              fontWeight: FontWeight.bold))),
                     ),
                   ),
                 ]),
@@ -61,16 +62,54 @@ class CategoryScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 6),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Choose Your', style: GoogleFonts.lato(
-                  fontSize: 14, color: AppTheme.textMuted, letterSpacing: 1.5,
-                  fontWeight: FontWeight.w600)),
+                    fontSize: 14, color: AppTheme.textMuted, letterSpacing: 1.5,
+                    fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text('Flirt Style', style: GoogleFonts.playfairDisplay(
-                  fontSize: 32, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                    fontSize: 32, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
                 const SizedBox(height: 6),
-                Text('AI crafts infinite unique lines for every mood',
-                  style: GoogleFonts.lato(fontSize: 13, color: AppTheme.textMuted)),
+                Text('A fresh line for every mood, every time',
+                    style: GoogleFonts.lato(fontSize: 13, color: AppTheme.textMuted)),
               ]),
             ),
+
+            // Mood Mixer entry point
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              child: GestureDetector(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const MoodMixerScreen())),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4A006E), Color(0xFFB91372)],
+                      begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    boxShadow: [BoxShadow(
+                      color: const Color(0xFFB91372).withOpacity(0.35),
+                      blurRadius: 18, offset: const Offset(0, 6),
+                    )],
+                  ),
+                  child: Row(children: [
+                    const Text('🧪', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('Mood Mixer', style: GoogleFonts.playfairDisplay(
+                            fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+                        Text('Blend any 2 styles into something new',
+                            style: GoogleFonts.lato(fontSize: 11.5, color: Colors.white70)),
+                      ]),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: Colors.white70),
+                  ]),
+                ),
+              ),
+            ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.05),
 
             // Grid
             Expanded(
@@ -129,7 +168,7 @@ class _CategoryCardState extends State<_CategoryCard>
           _ctrl.reverse();
           context.read<FlirtProvider>().selectCategory(cat);
           Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const GeneratorScreen()));
+              MaterialPageRoute(builder: (_) => const GeneratorScreen()));
         },
         onTapCancel: () => _ctrl.reverse(),
         child: Container(
@@ -159,7 +198,8 @@ class _CategoryCardState extends State<_CategoryCard>
                 ),
               ),
             ),
-            // AI badge
+            // Mode badge — honestly reflects whether AI is actually
+            // configured, rather than claiming AI on every card regardless.
             Positioned(top: 10, right: 10,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -167,9 +207,12 @@ class _CategoryCardState extends State<_CategoryCard>
                   color: Colors.black.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text('∞ AI', style: GoogleFonts.lato(
-                  fontSize: 9, color: Colors.white70, fontWeight: FontWeight.w800,
-                  letterSpacing: 0.8)),
+                child: Text(
+                  context.watch<FlirtProvider>().isAiAvailable ? '✨ AI' : '∞',
+                  style: GoogleFonts.lato(
+                      fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8),
+                ),
               ),
             ),
             // Content
@@ -181,13 +224,13 @@ class _CategoryCardState extends State<_CategoryCard>
                   Text(cat.emoji, style: const TextStyle(fontSize: 34)),
                   const Spacer(),
                   Text(cat.name, style: GoogleFonts.playfairDisplay(
-                    fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                      fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
                   const SizedBox(height: 3),
                   Text(cat.tagline, style: GoogleFonts.lato(
-                    fontSize: 11, color: Colors.white60, fontWeight: FontWeight.w500)),
+                      fontSize: 11, color: Colors.white60, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 5),
                   Text(cat.description, style: GoogleFonts.lato(
-                    fontSize: 10.5, color: Colors.white54, height: 1.3)),
+                      fontSize: 10.5, color: Colors.white54, height: 1.3)),
                 ],
               ),
             ),
