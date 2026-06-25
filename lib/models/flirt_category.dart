@@ -27,6 +27,10 @@ class FavoriteMessage {
   final String catEmoji;
   final String message;
   final DateTime savedAt;
+  /// Which Conversation Arc stage this was saved from (e.g. "Opener",
+  /// "Follow-up", "Going Deeper"). Nullable so favorites saved before this
+  /// feature existed still load correctly — they just won't show a stage.
+  final String? arcStageLabel;
 
   FavoriteMessage({
     required this.id,
@@ -35,18 +39,21 @@ class FavoriteMessage {
     required this.catEmoji,
     required this.message,
     required this.savedAt,
+    this.arcStageLabel,
   });
 
   Map<String, dynamic> toJson() => {
     'id': id, 'catId': catId, 'catName': catName,
     'catEmoji': catEmoji, 'message': message,
     'savedAt': savedAt.toIso8601String(),
+    'arcStageLabel': arcStageLabel,
   };
 
   factory FavoriteMessage.fromJson(Map<String, dynamic> j) => FavoriteMessage(
     id: j['id'], catId: j['catId'], catName: j['catName'],
     catEmoji: j['catEmoji'], message: j['message'],
     savedAt: DateTime.parse(j['savedAt']),
+    arcStageLabel: j['arcStageLabel'] as String?,
   );
 }
 
