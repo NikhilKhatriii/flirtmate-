@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import '../theme/app_theme.dart';
+
+// Neutral, Apple-style glass palette — kept local so this widget
+// doesn't depend on the app-wide pink/purple theme.
+class _GlassPalette {
+  static const Color surface = Color(0xFF1C1C1E);
+  static const Color border = Color(0xFF2C2C2E);
+}
 
 class GlassCard extends StatelessWidget {
   final Widget child;
@@ -26,13 +32,13 @@ class GlassCard extends StatelessWidget {
           gradient: gradient != null
               ? LinearGradient(colors: gradient!, begin: Alignment.topLeft, end: Alignment.bottomRight)
               : null,
-          color: gradient == null ? AppTheme.surfaceLight : null,
+          color: gradient == null ? _GlassPalette.surface.withValues(alpha: 0.6) : null,
           border: Border.all(
-            color: borderColor ?? AppTheme.cardBorder, width: 1,
+            color: borderColor ?? _GlassPalette.border, width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 20, offset: const Offset(0, 8),
             ),
           ],

@@ -3,7 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/flirt_provider.dart';
 import '../models/vibe.dart';
-import '../theme/app_theme.dart';
+
+// Neutral, Apple-style palette — kept local so this sheet doesn't
+// depend on the app-wide pink/purple theme.
+class _SheetPalette {
+  static const Color surface = Color(0xFF1C1C1E);
+  static const Color surfaceLight = Color(0xFF2C2C2E);
+  static const Color border = Color(0xFF3A3A3C);
+  static const Color accent = Color(0xFF0A84FF);
+  static const Color textPrimary = Color(0xFFF5F5F7);
+  static const Color textSecondary = Color(0xFFAEAEB2);
+  static const Color textMuted = Color(0xFF8E8E93);
+}
 
 /// Opens the personalization bottom sheet, letting the user optionally
 /// enter a name and/or a short trait/interest to weave into generated
@@ -85,7 +96,7 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: const BoxDecoration(
-          color: AppTheme.surface,
+          color: _SheetPalette.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         padding: const EdgeInsets.fromLTRB(24, 14, 24, 24),
@@ -100,28 +111,36 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                   child: Container(
                     width: 40, height: 4,
                     decoration: BoxDecoration(
-                      color: AppTheme.cardBorder,
+                      color: _SheetPalette.border,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 18),
                 Row(children: [
-                  const Text('💌', style: TextStyle(fontSize: 22)),
+                  Container(
+                    width: 32, height: 32,
+                    decoration: BoxDecoration(
+                      color: _SheetPalette.accent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.tune_rounded,
+                        color: _SheetPalette.accent, size: 18),
+                  ),
                   const SizedBox(width: 10),
-                  Text('Make it personal', style: GoogleFonts.playfairDisplay(
-                      fontSize: 20, fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary)),
+                  Text('Make it personal', style: GoogleFonts.inter(
+                      fontSize: 19, fontWeight: FontWeight.w700,
+                      color: _SheetPalette.textPrimary)),
                 ]),
                 const SizedBox(height: 6),
                 Text(
                   'All optional — add any of these and every line adapts to fit.',
-                  style: GoogleFonts.lato(fontSize: 12.5, color: AppTheme.textMuted, height: 1.4),
+                  style: GoogleFonts.inter(fontSize: 12.5, color: _SheetPalette.textMuted, height: 1.4),
                 ),
                 const SizedBox(height: 22),
 
-                Text('THEIR NAME', style: GoogleFonts.lato(
-                    fontSize: 11, color: AppTheme.textMuted,
+                Text('THEIR NAME', style: GoogleFonts.inter(
+                    fontSize: 11, color: _SheetPalette.textMuted,
                     fontWeight: FontWeight.w700, letterSpacing: 1)),
                 const SizedBox(height: 8),
                 _PersonalizeField(
@@ -132,8 +151,8 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
 
                 const SizedBox(height: 18),
 
-                Text('SOMETHING ABOUT THEM', style: GoogleFonts.lato(
-                    fontSize: 11, color: AppTheme.textMuted,
+                Text('SOMETHING ABOUT THEM', style: GoogleFonts.inter(
+                    fontSize: 11, color: _SheetPalette.textMuted,
                     fontWeight: FontWeight.w700, letterSpacing: 1)),
                 const SizedBox(height: 8),
                 _PersonalizeField(
@@ -144,18 +163,18 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                 const SizedBox(height: 6),
                 Text(
                   'Tip: phrase it so "you ___" reads naturally — like "loves hiking".',
-                  style: GoogleFonts.lato(fontSize: 11, color: AppTheme.textMuted),
+                  style: GoogleFonts.inter(fontSize: 11, color: _SheetPalette.textMuted),
                 ),
 
                 const SizedBox(height: 20),
 
-                Text('THE VIBE', style: GoogleFonts.lato(
-                    fontSize: 11, color: AppTheme.textMuted,
+                Text('THE VIBE', style: GoogleFonts.inter(
+                    fontSize: 11, color: _SheetPalette.textMuted,
                     fontWeight: FontWeight.w700, letterSpacing: 1)),
                 const SizedBox(height: 4),
                 Text(
                   'Pick the situation — this shapes tone, not the actual words of anyone else.',
-                  style: GoogleFonts.lato(fontSize: 11, color: AppTheme.textMuted, height: 1.3),
+                  style: GoogleFonts.inter(fontSize: 11, color: _SheetPalette.textMuted, height: 1.3),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
@@ -168,19 +187,25 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                         decoration: BoxDecoration(
-                          color: selected ? AppTheme.primary.withOpacity(0.18) : AppTheme.surfaceLight,
+                          color: selected
+                              ? _SheetPalette.accent.withValues(alpha: 0.16)
+                              : _SheetPalette.surfaceLight,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: selected ? AppTheme.primary : AppTheme.cardBorder,
+                            color: selected ? _SheetPalette.accent : _SheetPalette.border,
                             width: selected ? 1.5 : 1,
                           ),
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Text(v.emoji, style: const TextStyle(fontSize: 13)),
-                          const SizedBox(width: 6),
-                          Text(v.label, style: GoogleFonts.lato(
+                          if (selected)
+                            const Padding(
+                              padding: EdgeInsets.only(right: 6),
+                              child: Icon(Icons.check_rounded,
+                                  size: 14, color: _SheetPalette.accent),
+                            ),
+                          Text(v.label, style: GoogleFonts.inter(
                             fontSize: 12.5,
-                            color: selected ? AppTheme.textPrimary : AppTheme.textSecondary,
+                            color: selected ? _SheetPalette.textPrimary : _SheetPalette.textSecondary,
                             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                           )),
                         ]),
@@ -197,12 +222,12 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                       onPressed: _clear,
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: AppTheme.cardBorder),
+                        side: const BorderSide(color: _SheetPalette.border),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                       ),
-                      child: Text('Clear', style: GoogleFonts.lato(
-                          color: AppTheme.textSecondary, fontWeight: FontWeight.w700)),
+                      child: Text('Clear', style: GoogleFonts.inter(
+                          color: _SheetPalette.textSecondary, fontWeight: FontWeight.w700)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -211,14 +236,14 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                     child: ElevatedButton(
                       onPressed: _save,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
+                        backgroundColor: _SheetPalette.accent,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                         elevation: 0,
                       ),
-                      child: Text('Save & Generate', style: GoogleFonts.lato(
-                          color: Colors.white, fontWeight: FontWeight.w800)),
+                      child: Text('Save & Generate', style: GoogleFonts.inter(
+                          color: Colors.white, fontWeight: FontWeight.w700)),
                     ),
                   ),
                 ]),
@@ -244,13 +269,13 @@ class _PersonalizeField extends StatelessWidget {
     return TextField(
       controller: controller,
       textCapitalization: TextCapitalization.sentences,
-      style: GoogleFonts.lato(fontSize: 14.5, color: AppTheme.textPrimary),
+      style: GoogleFonts.inter(fontSize: 14.5, color: _SheetPalette.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.lato(fontSize: 14, color: AppTheme.textMuted),
-        prefixIcon: Icon(icon, color: AppTheme.textMuted, size: 20),
+        hintStyle: GoogleFonts.inter(fontSize: 14, color: _SheetPalette.textMuted),
+        prefixIcon: Icon(icon, color: _SheetPalette.textMuted, size: 20),
         filled: true,
-        fillColor: AppTheme.surfaceLight,
+        fillColor: _SheetPalette.surfaceLight,
         contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -258,7 +283,7 @@ class _PersonalizeField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+          borderSide: const BorderSide(color: _SheetPalette.accent, width: 1.5),
         ),
       ),
     );

@@ -302,15 +302,21 @@ class FlirtProvider extends ChangeNotifier {
     if (existing >= 0) {
       _favorites.removeAt(existing);
     } else {
-      _favorites.insert(0, FavoriteMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        catId: _selectedCategory!.id,
-        catName: _selectedCategory!.name,
-        catEmoji: _selectedCategory!.emoji,
-        message: _currentMessage,
-        savedAt: DateTime.now(),
-        arcStageLabel: _arcStage == ArcStage.opener ? null : _arcStage.label,
-      ));
+      _favorites.insert(
+        0,
+        FavoriteMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          catId: _selectedCategory!.id,
+          catName: _selectedCategory!.name,
+          // Store the icon's codePoint rather than an emoji string so it
+          // round-trips cleanly through JSON and renders via IconData.
+          catIconCodePoint: _selectedCategory!.icon.codePoint,
+          message: _currentMessage,
+          savedAt: DateTime.now(),
+          arcStageLabel:
+          _arcStage == ArcStage.opener ? null : _arcStage.label,
+        ),
+      );
     }
 
     notifyListeners();

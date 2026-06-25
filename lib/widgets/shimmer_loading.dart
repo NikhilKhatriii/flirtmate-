@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+
+// Neutral, Apple-style palette — kept local so this widget doesn't
+// depend on the app-wide pink/purple theme.
+class _ShimmerPalette {
+  static const Color surfaceLight = Color(0xFF2C2C2E);
+  static const Color accent = Color(0xFF0A84FF);
+  static const Color textMuted = Color(0xFF8E8E93);
+}
 
 class ShimmerLoading extends StatefulWidget {
   const ShimmerLoading({super.key});
@@ -39,8 +46,9 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                AppTheme.surfaceLight, AppTheme.primary.withOpacity(0.5),
-                AppTheme.surfaceLight,
+                _ShimmerPalette.surfaceLight,
+                _ShimmerPalette.accent.withValues(alpha: 0.5),
+                _ShimmerPalette.surfaceLight,
               ],
               stops: [
                 (_anim.value - 0.3).clamp(0.0, 1.0),
@@ -56,10 +64,10 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
           ),
         ),
         const SizedBox(height: 24),
-        _PulsingDots(),
+        const _PulsingDots(),
         const SizedBox(height: 8),
-        Text('Crafting the perfect line...',
-            style: TextStyle(color: AppTheme.textMuted, fontSize: 13,
+        const Text('Crafting the perfect line...',
+            style: TextStyle(color: _ShimmerPalette.textMuted, fontSize: 13,
                 fontStyle: FontStyle.italic)),
       ],
     );
@@ -76,6 +84,8 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
 }
 
 class _PulsingDots extends StatefulWidget {
+  const _PulsingDots();
+
   @override
   State<_PulsingDots> createState() => _PulsingDotsState();
 }
@@ -107,7 +117,7 @@ class _PulsingDotsState extends State<_PulsingDots>
             margin: const EdgeInsets.symmetric(horizontal: 4),
             width: 8, height: 8,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.3 + val * 0.7),
+              color: _ShimmerPalette.accent.withValues(alpha: 0.3 + val * 0.7),
               shape: BoxShape.circle,
             ),
           );

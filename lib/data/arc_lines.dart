@@ -16,9 +16,27 @@
 /// Like the rest of the app, this is static, curated content the user reads
 /// and chooses from — never anything derived from analyzing a real
 /// conversation or another person's actual messages.
+///
+/// Design system: Apple-style professional palette.
+///   Primary blue  : #007AFF  (iOS system blue)
+///   Label primary : #000000
+///   Label secondary: #3C3C43 @ 60% → rendered #636366
+///   Separator     : #3C3C43 @ 30% → rendered #C6C6C8
+///   Fill primary  : #F2F2F7  (iOS grouped background)
+///   Fill secondary: #FFFFFF
+///   Accent teal   : #32ADE6  (iOS teal / system cyan)
+///   Destructive   : #FF3B30  (iOS red — not used here but defined)
+///
+/// Icons: use flutter/cupertino.dart CupertinoIcons exclusively so the UI
+/// reads as native iOS. No emoji characters appear anywhere in the UI layer.
 library;
 
+import 'package:flutter/cupertino.dart';
 import 'offline_lines.dart';
+
+// ---------------------------------------------------------------------------
+// Arc stage content
+// ---------------------------------------------------------------------------
 
 /// What to say once the other person has replied well to an opener.
 /// Keeps the same tone as the category's openers, but is written to
@@ -343,28 +361,62 @@ final Map<String, List<String>> kDeeperLines = {
   ],
 };
 
+// ---------------------------------------------------------------------------
+// Arc stage enum — Apple-style professional design tokens
+// ---------------------------------------------------------------------------
+
 /// The three stages of a Conversation Arc, in order.
 enum ArcStage { opener, followUp, deeper }
 
 extension ArcStageLabel on ArcStage {
+  /// Short display label shown in the segmented control / tab bar.
   String get label => switch (this) {
-    ArcStage.opener => 'Opener',
+    ArcStage.opener   => 'Opener',
     ArcStage.followUp => 'Follow-up',
-    ArcStage.deeper => 'Going Deeper',
+    ArcStage.deeper   => 'Going Deeper',
   };
 
+  /// One-line description shown beneath the label in the stage selector.
   String get description => switch (this) {
-    ArcStage.opener => 'Break the ice',
+    ArcStage.opener   => 'Break the ice',
     ArcStage.followUp => 'Keep it going after a good reply',
-    ArcStage.deeper => 'Genuine questions once it\'s flowing',
+    ArcStage.deeper   => 'Genuine questions once it\'s flowing',
   };
 
-  String get emoji => switch (this) {
-    ArcStage.opener => '👋',
-    ArcStage.followUp => '💬',
-    ArcStage.deeper => '🌊',
+  // -------------------------------------------------------------------------
+  // Icon — CupertinoIcons only; no emoji characters in the UI layer.
+  // -------------------------------------------------------------------------
+
+  /// SF Symbol / CupertinoIcon for this stage.
+  ///
+  /// Opener    → bubble.left          (starting a conversation)
+  /// Follow-up → arrow.turn.down.right (continuing the thread)
+  /// Deeper    → waveform             (flowing, deepening signal)
+  IconData get icon => switch (this) {
+    ArcStage.opener   => CupertinoIcons.chat_bubble,
+    ArcStage.followUp => CupertinoIcons.arrow_turn_down_right,
+    ArcStage.deeper   => CupertinoIcons.waveform,
+  };
+
+  // -------------------------------------------------------------------------
+  // Color — Apple system palette; no pink, no purple.
+  //
+  //   opener   : #007AFF  iOS system blue   — initiating, primary action
+  //   followUp : #32ADE6  iOS system cyan   — continuation, secondary blue
+  //   deeper   : #636366  iOS label/secondary gray — settled, substantive
+  // -------------------------------------------------------------------------
+
+  /// Accent color for this stage, expressed as a Flutter [Color].
+  Color get accentColor => switch (this) {
+    ArcStage.opener   => const Color(0xFF007AFF),
+    ArcStage.followUp => const Color(0xFF32ADE6),
+    ArcStage.deeper   => const Color(0xFF636366),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Line retrieval
+// ---------------------------------------------------------------------------
 
 /// Returns a randomized pool of lines for the given stage + category.
 /// For [ArcStage.opener], this defers to the main offline line bank
@@ -372,8 +424,12 @@ extension ArcStageLabel on ArcStage {
 /// regular generator experience. Follow-up and deeper lines don't carry
 /// name/trait personalization — they're written to work as general
 /// continuations regardless of who's on the other end.
-List<String> shuffledArcLinesFor(ArcStage stage, String categoryId,
-    {String? name, String? trait}) {
+List<String> shuffledArcLinesFor(
+    ArcStage stage,
+    String categoryId, {
+      String? name,
+      String? trait,
+    }) {
   switch (stage) {
     case ArcStage.opener:
       return shuffledLinesFor(categoryId, name: name, trait: trait);

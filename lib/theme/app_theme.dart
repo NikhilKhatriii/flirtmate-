@@ -2,23 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primary = Color(0xFFE91E8C);
-  static const Color primaryDark = Color(0xFFC2185B);
-  static const Color primaryLight = Color(0xFFFF6B9D);
-  static const Color background = Color(0xFF0D0D1A);
-  static const Color surface = Color(0xFF161628);
-  static const Color surfaceLight = Color(0xFF1E1E35);
-  static const Color cardBorder = Color(0xFF2A2A4A);
-  static const Color textPrimary = Color(0xFFF5F5FF);
-  static const Color textSecondary = Color(0xFF9090B8);
-  static const Color textMuted = Color(0xFF5A5A80);
-  static const Color accent = Color(0xFFFFB3CC);
-  static const Color gold = Color(0xFFFFD700);
+  // Core palette — Apple-style graphite + system blue accent
+  static const Color primary = Color(0xFF0A84FF);
+  static const Color primaryLight = Color(0xFF409CFF);
+  static const Color primaryDark = Color(0xFF0060DB);
+
+  static const Color background = Color(0xFF000000);
+  static const Color surface = Color(0xFF1C1C1E);
+  static const Color surfaceLight = Color(0xFF2C2C2E);
+  static const Color cardBorder = Color(0xFF3A3A3C);
+
+  static const Color textPrimary = Color(0xFFF5F5F7);
+  static const Color textSecondary = Color(0xFFAEAEB2);
+  static const Color textMuted = Color(0xFF8E8E93);
 
   static ThemeData get theme {
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.dark,
       scaffoldBackgroundColor: background,
+      fontFamily: GoogleFonts.inter().fontFamily,
       colorScheme: const ColorScheme.dark(
         primary: primary,
         secondary: primaryLight,
@@ -26,22 +29,32 @@ class AppTheme {
         onPrimary: Colors.white,
         onSurface: textPrimary,
       ),
-      textTheme: GoogleFonts.latoTextTheme(ThemeData.dark().textTheme),
-      appBarTheme: AppBarTheme(
+      textTheme: TextTheme(
+        bodyLarge: GoogleFonts.inter(color: textPrimary),
+        bodyMedium: GoogleFonts.inter(color: textPrimary),
+        bodySmall: GoogleFonts.inter(color: textSecondary),
+      ),
+      appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true,
-        titleTextStyle: GoogleFonts.playfairDisplay(
-          fontSize: 20, fontWeight: FontWeight.w700, color: textPrimary,
+        surfaceTintColor: Colors.transparent,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
-        iconTheme: const IconThemeData(color: primaryLight),
       ),
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: const Color(0xFF1E1E3A),
-        contentTextStyle: GoogleFonts.lato(color: textPrimary, fontSize: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        behavior: SnackBarBehavior.floating,
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: textSecondary,
+          side: const BorderSide(color: cardBorder),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
       ),
+      dividerColor: cardBorder,
     );
   }
 }
