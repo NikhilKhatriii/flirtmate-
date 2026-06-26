@@ -21,9 +21,10 @@ class ApiService {
     }
     try {
       if (Platform.isAndroid) {
-        // Android emulator sees your local machine at 10.0.2.2
-        // If using a physical device, replace with your machine's local IP (e.g. 192.168.1.x)
-        return 'http://10.0.2.2:5000/api/generate';
+        // 10.0.2.2 is for Android Emulator
+        // 192.168.18.104 is your machine's local IP for physical devices
+        // The app will try to connect to the computer on the same Wi-Fi.
+        return 'http://192.168.18.104:5000/api/generate';
       }
     } catch (_) {}
     return 'http://localhost:5000/api/generate';
