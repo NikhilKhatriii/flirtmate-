@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/flirt_provider.dart';
 import '../models/vibe.dart';
 import '../theme/app_theme.dart';
+import '../providers/language_provider.dart';
 
 Future<void> showPersonalizeSheet(BuildContext context) {
   final provider = context.read<FlirtProvider>();
@@ -54,6 +55,7 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
   }
 
   void _save() {
+    final lp = context.read<LanguageProvider>();
     final provider = context.read<FlirtProvider>();
     provider.setPersonalization(
       name: _nameCtrl.text,
@@ -61,10 +63,11 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
     );
     provider.setVibe(_vibeId);
     Navigator.pop(context);
-    provider.generateLine();
+    provider.generateLine(languageCode: lp.currentLanguage.name);
   }
 
   void _clear() {
+    final lp = context.read<LanguageProvider>();
     _nameCtrl.clear();
     _traitCtrl.clear();
     setState(() => _vibeId = kNoVibe.id);
@@ -72,7 +75,7 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
     provider.setPersonalization(name: '', trait: '');
     provider.setVibe(kNoVibe.id);
     Navigator.pop(context);
-    provider.generateLine();
+    provider.generateLine(languageCode: lp.currentLanguage.name);
   }
 
   @override

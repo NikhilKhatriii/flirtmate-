@@ -7,9 +7,21 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/flirt_provider.dart';
 import '../theme/app_theme.dart';
+import '../services/analytics_service.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.screenView('favorites_screen');
+  }
 
   @override
   Widget build(BuildContext context) {

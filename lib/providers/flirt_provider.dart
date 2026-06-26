@@ -164,7 +164,7 @@ class FlirtProvider extends ChangeNotifier {
 
   bool get isMixed => _mixSources != null;
 
-  Future<void> generateLine() async {
+  Future<void> generateLine({String languageCode = 'en'}) async {
     if (_selectedCategory == null || _state == GeneratorState.loading) return;
 
     _state = GeneratorState.loading;
@@ -189,6 +189,7 @@ class FlirtProvider extends ChangeNotifier {
           line = await ApiService.generatePickupLine(
             category: _selectedCategory!,
             recentLines: _sessionHistory,
+            languageCode: languageCode,
             vibe: hasVibe ? selectedVibe : null,
             userContext: _buildUserContext(),
           );

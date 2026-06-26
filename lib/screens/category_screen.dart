@@ -11,9 +11,21 @@ import '../widgets/language_selector_sheet.dart';
 import 'generator_screen.dart';
 import 'favorites_screen.dart';
 import 'mood_mixer_screen.dart';
+import '../services/analytics_service.dart';
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
+
+  @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.screenView('category_screen');
+  }
 
   @override
   Widget build(BuildContext context) {

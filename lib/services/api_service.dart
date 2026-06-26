@@ -16,11 +16,13 @@ class ApiService {
   /// Dynamically resolves the backend host based on the current platform.
   static String get _baseUrl {
     if (kIsWeb) {
+      // For Flutter Web, use localhost. Ensure backend has CORS enabled.
       return 'http://localhost:5000/api/generate';
     }
     try {
       if (Platform.isAndroid) {
         // Android emulator sees your local machine at 10.0.2.2
+        // If using a physical device, replace with your machine's local IP (e.g. 192.168.1.x)
         return 'http://10.0.2.2:5000/api/generate';
       }
     } catch (_) {}
@@ -36,6 +38,7 @@ class ApiService {
   static Future<String> generatePickupLine({
     required FlirtCategory category,
     required List<String> recentLines,
+    required String languageCode,
     Vibe? vibe,
     String? userContext,
     int maxAttempts = 2,
@@ -46,6 +49,7 @@ class ApiService {
         final line = await _requestOne(
           category: category,
           recentLines: recentLines,
+          languageCode: languageCode,
           vibe: vibe,
           userContext: userContext,
         );
@@ -65,6 +69,7 @@ class ApiService {
   static Future<String> _requestOne({
     required FlirtCategory category,
     required List<String> recentLines,
+    required String languageCode,
     Vibe? vibe,
     String? userContext,
   }) async {
@@ -82,6 +87,7 @@ class ApiService {
                 'styleHint': category.styleHint,
                 'tagline': category.tagline,
               },
+              'languageCode': languageCode,
               'recentLines': recentLines,
               'vibe': vibe != null && vibe.id != kNoVibe.id
                   ? {
@@ -101,7 +107,10 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final text = (data['line'] as String).trim();
+      
+      // The backend might return 'line' or 'pickup_line' depending on implementation
+      final text = (data['line'] ?? data['pickup_line'] ?? '').toString().trim();
+
       if (text.isNotEmpty) return text;
       throw Exception('The AI returned an empty response. Please try again.');
     }

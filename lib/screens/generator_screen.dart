@@ -51,7 +51,10 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     AnalyticsService.screenView('generator_screen');
     _msgCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FlirtProvider>().generateLine();
+      final lp = context.read<LanguageProvider>();
+      context.read<FlirtProvider>().generateLine(
+        languageCode: lp.currentLanguage.name,
+      );
     });
   }
 
@@ -62,8 +65,11 @@ class _GeneratorScreenState extends State<GeneratorScreen>
   }
 
   void _animateAndGenerate() {
+    final lp = context.read<LanguageProvider>();
     _msgCtrl.forward(from: 0).then((_) {
-      context.read<FlirtProvider>().generateLine();
+      context.read<FlirtProvider>().generateLine(
+        languageCode: lp.currentLanguage.name,
+      );
       _msgCtrl.reverse();
     });
   }
@@ -592,7 +598,10 @@ class _MessageCard extends StatelessWidget {
           const SizedBox(height: 12),
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: () => provider.generateLine(),
+            onPressed: () {
+              final lp2 = context.read<LanguageProvider>();
+              provider.generateLine(languageCode: lp2.currentLanguage.name);
+            },
             child: Text(
               lp.translate('tap_to_retry'),
               style: GoogleFonts.inter(

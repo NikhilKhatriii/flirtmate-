@@ -16,8 +16,8 @@ CORS(app)
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").replace('"', '').replace("'", "").strip()
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").replace('"', '').replace("'", "").strip()
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 @app.route("/api/health", methods=["GET"])
@@ -46,18 +46,31 @@ def generate():
     
     user_context = data.get("userContext")
     recent_lines = data.get("recentLines", [])
-    
+    language_code = data.get("languageCode", "en")
+
+    # Map language codes to names for the prompt
+    languages = {
+        "en": "English",
+        "ne": "Nepali",
+        "hi": "Hindi",
+        "es": "Spanish",
+        "zh": "Chinese",
+        "ja": "Japanese"
+    }
+    target_language = languages.get(language_code, "English")
+
     avoid_list = " | ".join(recent_lines[:8]) if recent_lines else ""
     
     # Constructing prompt
     prompt_lines = [
         f'Generate exactly ONE sophisticated, high-class flirty pickup line or message for the "{category_name}" style.',
+        f'The response MUST be written in {target_language}.',
         f'Style description: {style_hint}' if style_hint else '',
         f'Tagline: "{tagline}"' if tagline else '',
         f'Situation: {vibe_hint}' if vibe_hint else '',
         '',
         'Rules:',
-        '- Output ONLY the line itself — no quotes, no labels, no explanation',
+        f'- Output ONLY the line itself in {target_language} — no quotes, no labels, no explanation, no English translation',
         '- Make it feel genuinely crafted and unique — not generic or clichéd',
         '- High-class language: witty, charming, intelligent',
         '- Length: 1 to 3 sentences maximum',
@@ -121,11 +134,13 @@ def generate():
         content = choices[0].get("message", {}).get("content", "").strip()
         
         # Clean any quotes surrounding the line
-        if (content.startswith('"') and content.endswith('"')) or (content.startswith('“') and content.endswith('”')):
+        if content.startswith('"') and content.endswith('"'):
+            content = content[1:-1].strip()
+        if content.startswith('“') and content.endswith('”'):
             content = content[1:-1].strip()
             
         logging.info(f"Successfully generated line: {content}")
-        return jsonify({"line": content})
+        return jsonify({"line": content, "status": "success"})
         
     except requests.exceptions.Timeout:
         logging.error("Request to Groq API timed out.")
