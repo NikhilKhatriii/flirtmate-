@@ -91,7 +91,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: const Icon(
+                child: Icon(
                   CupertinoIcons.chevron_left,
                   color: AppTheme.primaryPlatinum, // Using preset for consistency
                   size: 20,
@@ -547,11 +547,13 @@ class _MessageCard extends StatelessWidget {
           ),
         ),
       ]),
-    );
+    ).animate(onPlay: (c) => c.repeat(reverse: true))
+     .moveY(begin: 0, end: 6, duration: 2500.ms, curve: Curves.easeInOutSine);
   }
 
   Widget _buildContent(BuildContext context) {
     final lp = context.watch<LanguageProvider>();
+    final accent = Theme.of(context).colorScheme.primary;
     switch (provider.state) {
       case GeneratorState.loading:
         return const ShimmerLoading();
@@ -589,7 +591,7 @@ class _MessageCard extends StatelessWidget {
               lp.translate('tap_to_retry'),
               style: GoogleFonts.inter(
                 fontSize: 13,
-                color: Theme.of(context).colorScheme.primary,
+                color: accent,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -598,12 +600,14 @@ class _MessageCard extends StatelessWidget {
 
       case GeneratorState.success:
         return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 350),
+          duration: const Duration(milliseconds: 600),
+          switchInCurve: Curves.easeOutQuart,
+          switchOutCurve: Curves.easeInQuart,
           transitionBuilder: (child, anim) => FadeTransition(
             opacity: anim,
             child: SlideTransition(
               position: Tween<Offset>(
-                begin: const Offset(0, 0.05),
+                begin: const Offset(0, 0.1),
                 end: Offset.zero,
               ).animate(anim),
               child: child,
@@ -620,7 +624,9 @@ class _MessageCard extends StatelessWidget {
               fontStyle: FontStyle.italic,
             ),
             textAlign: TextAlign.center,
-          ),
+          ).animate(key: ValueKey(provider.currentMessage))
+           .shimmer(duration: const Duration(milliseconds: 1200), color: accent.withValues(alpha: 0.2))
+           .blur(begin: const Offset(4, 4), end: Offset.zero, duration: const Duration(milliseconds: 600)),
         );
 
       default:

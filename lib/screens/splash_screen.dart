@@ -333,7 +333,8 @@ class _CelestialBackground extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
             ).animate(onPlay: (c) => c.repeat(reverse: true))
-             .fadeIn(duration: (1000 + random.nextInt(2000)).ms),
+             .fadeIn(duration: (1000 + random.nextInt(2000)).ms)
+             .move(begin: Offset.zero, end: Offset(random.nextDouble() * 20 - 10, random.nextDouble() * 20 - 10), duration: 10.seconds, curve: Curves.linear),
           );
         }),
       ),

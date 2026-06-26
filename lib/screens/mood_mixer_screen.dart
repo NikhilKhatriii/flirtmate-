@@ -57,7 +57,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: const Icon(
+                child: Icon(
                   CupertinoIcons.chevron_left,
                   color: AppTheme.primaryPlatinum,
                   size: 20,
@@ -67,7 +67,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 Container(
                   width: 28, height: 28,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -158,7 +158,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: readyToMix
-                    ? const LinearGradient(
+                    ? LinearGradient(
                   colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -212,7 +212,10 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                   ],
                 ),
               ),
-            ),
+            ).animate(target: readyToMix ? 1 : 0)
+             .shimmer(duration: 1200.ms, color: Colors.white.withValues(alpha: 0.2))
+             .scale(begin: const Offset(1, 1), end: const Offset(1.02, 1.02), duration: 600.ms, curve: Curves.easeInOutSine),
+
           ),
         ]),
       ),
@@ -220,7 +223,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
   }
 }
 
-class _MixCard extends StatelessWidget {
+class _MixCard extends StatefulWidget {
   final FlirtCategory category;
   final int index;
   final int? selectedOrder;
@@ -231,108 +234,138 @@ class _MixCard extends StatelessWidget {
     required this.index,
     required this.selectedOrder,
     required this.onTap,
+    super.key,
   });
+
+  @override
+  State<_MixCard> createState() => _MixCardState();
+}
+
+class _MixCardState extends State<_MixCard> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
+    _scale = Tween<double>(begin: 1.0, end: 0.94).animate(
+        CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final lp = context.watch<LanguageProvider>();
-    final isSelected = selectedOrder != null;
+    final isSelected = widget.selectedOrder != null;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? Theme.of(context).colorScheme.primary : AppTheme.cardBorder,
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected 
-                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15) 
-                  : Colors.black.withValues(alpha: 0.1),
-              blurRadius: isSelected ? 16 : 8,
-              offset: const Offset(0, 4),
+    return ScaleTransition(
+      scale: _scale,
+      child: GestureDetector(
+        onTapDown: (_) => _ctrl.forward(),
+        onTapUp: (_) {
+          _ctrl.reverse();
+          widget.onTap();
+        },
+        onTapCancel: () => _ctrl.reverse(),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutQuart,
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? Theme.of(context).colorScheme.primary : AppTheme.cardBorder,
+              width: isSelected ? 2 : 1,
             ),
-          ],
-        ),
-        child: Stack(children: [
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: category.gradientColors,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(9),
+            boxShadow: [
+              BoxShadow(
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.25) 
+                    : Colors.black.withValues(alpha: 0.1),
+                blurRadius: isSelected ? 20 : 8,
+                offset: isSelected ? const Offset(0, 8) : const Offset(0, 4),
               ),
-              child: Icon(
-                category.icon,
-                color: AppTheme.textPrimary,
-                size: 18,
-              ),
-            ),
+            ],
           ),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  lp.translate(category.id),
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
-                  ),
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  lp.translate('${category.id}_tagline'),
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    color: isSelected ? Theme.of(context).colorScheme.primary : AppTheme.textSecondary,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-          if (isSelected)
-            Positioned(
-              top: 10, right: 10,
+          child: Stack(children: [
+            Padding(
+              padding: const EdgeInsets.all(14),
               child: Container(
-                width: 20, height: 20,
+                width: 36, height: 36,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: widget.category.gradientColors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(9),
                 ),
-                child: Center(
-                  child: Text(
-                    '$selectedOrder',
+                child: Icon(
+                  widget.category.icon,
+                  color: AppTheme.textPrimary,
+                  size: 18,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    lp.translate(widget.category.id),
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    lp.translate('${widget.category.id}_tagline'),
                     style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.onPrimary,
+                      fontSize: 10,
+                      color: isSelected ? Theme.of(context).colorScheme.primary : AppTheme.textSecondary,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Positioned(
+                top: 10, right: 10,
+                child: Container(
+                  width: 20, height: 20,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${widget.selectedOrder}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-        ]),
+              ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
+          ]),
+        ),
       ),
-    ).animate(delay: (index * 30).ms).fadeIn(duration: 350.ms).slideY(begin: 0.08);
+    ).animate(delay: (widget.index * 30).ms).fadeIn(duration: 350.ms).slideY(begin: 0.08);
   }
 }

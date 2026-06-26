@@ -97,61 +97,96 @@ class CategoryScreen extends StatelessWidget {
               itemCount: kCategories.length,
               itemBuilder: (ctx, i) => _CategoryCard(category: kCategories[i], index: i),
             ),
-          ),
+          ).animate().shimmer(duration: 2000.ms, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05)),
         ]),
       ),
     );
   }
 }
 
-class _CategoryCard extends StatelessWidget {
+class _CategoryCard extends StatefulWidget {
   final FlirtCategory category;
   final int index;
   const _CategoryCard({required this.category, required this.index});
+
+  @override
+  State<_CategoryCard> createState() => _CategoryCardState();
+}
+
+class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
+    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
+        CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final lp = context.watch<LanguageProvider>();
     final accent = Theme.of(context).colorScheme.primary;
 
-    return GestureDetector(
-      onTap: () {
-        context.read<FlirtProvider>().selectCategory(category);
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const GeneratorScreen()));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF14171C), // Strictly surface color
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: accent.withValues(alpha: 0.15), width: 1), // Requirement 3: Thin accent border
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Subtle tinted icon background (Requirement 3)
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                child: Icon(category.icon, color: accent, size: 20),
-              ),
-              const Spacer(),
-              // Flexible text handling (Requirement 4)
-              Text(lp.translate(category.id),
-                style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(lp.translate('${category.id}_desc'),
-                style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF8E95A0), height: 1.3),
-                maxLines: 2, overflow: TextOverflow.ellipsis,
+    return ScaleTransition(
+      scale: _scale,
+      child: GestureDetector(
+        onTapDown: (_) => _ctrl.forward(),
+        onTapUp: (_) {
+          _ctrl.reverse();
+          context.read<FlirtProvider>().selectCategory(widget.category);
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const GeneratorScreen()));
+        },
+        onTapCancel: () => _ctrl.reverse(),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF14171C), 
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: accent.withValues(alpha: 0.15), width: 1), 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                  child: Icon(widget.category.icon, color: accent, size: 20),
+                ),
+                const Spacer(),
+                Text(lp.translate(widget.category.id),
+                  style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(lp.translate('${widget.category.id}_desc'),
+                  style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF8E95A0), height: 1.3),
+                  maxLines: 2, overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-    ).animate(delay: (index * 40).ms).fadeIn(duration: 400.ms).scale(begin: const Offset(0.9, 0.9));
+    ).animate(delay: (widget.index * 40).ms)
+     .fadeIn(duration: 500.ms, curve: Curves.easeOut)
+     .moveY(begin: 30, end: 0, duration: 500.ms, curve: Curves.easeOutQuad);
   }
 }
 
