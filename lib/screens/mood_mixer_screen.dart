@@ -8,6 +8,7 @@ import '../providers/flirt_provider.dart';
 import '../providers/language_provider.dart';
 import '../theme/app_theme.dart';
 import 'generator_screen.dart';
+import '../services/analytics_service.dart';
 
 class MoodMixerScreen extends StatefulWidget {
   const MoodMixerScreen({super.key});
@@ -18,6 +19,12 @@ class MoodMixerScreen extends StatefulWidget {
 
 class _MoodMixerScreenState extends State<MoodMixerScreen> {
   final List<FlirtCategory> _picked = [];
+
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.screenView('mood_mixer_screen');
+  }
 
   void _toggle(FlirtCategory cat) {
     setState(() {

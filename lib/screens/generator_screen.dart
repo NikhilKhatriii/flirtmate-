@@ -48,6 +48,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
   @override
   void initState() {
     super.initState();
+    AnalyticsService.screenView('generator_screen');
     _msgCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FlirtProvider>().generateLine();
