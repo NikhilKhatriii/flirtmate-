@@ -5,13 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/flirt_category.dart';
 import '../providers/flirt_provider.dart';
+import '../providers/language_provider.dart';
 import '../theme/app_theme.dart';
 import 'generator_screen.dart';
 
-/// Lets the user pick exactly two categories to blend into one combined
-/// style — e.g. Romantic + Funny gives sweet lines with a comedic edge.
-/// Tapping two cards and confirming jumps straight into the generator
-/// using a synthetic, blended FlirtCategory.
 class MoodMixerScreen extends StatefulWidget {
   const MoodMixerScreen({super.key});
 
@@ -29,8 +26,6 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
       } else if (_picked.length < 2) {
         _picked.add(cat);
       } else {
-        // Already have 2 picked — swap out the oldest pick for the new one
-        // so tapping a third card always replaces rather than doing nothing.
         _picked.removeAt(0);
         _picked.add(cat);
       }
@@ -48,6 +43,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     final readyToMix = _picked.length == 2;
 
     return Scaffold(
@@ -59,22 +55,20 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
             padding: const EdgeInsets.fromLTRB(4, 12, 20, 0),
             child: Row(children: [
               CupertinoButton(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
                 child: const Icon(
                   CupertinoIcons.chevron_left,
-                  color: AppTheme.primary,
+                  color: AppTheme.primaryPlatinum,
                   size: 20,
                 ),
               ),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 Container(
-                  width: 28,
-                  height: 28,
+                  width: 28, height: 28,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppTheme.primaryDark, AppTheme.primary],
+                      colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -88,7 +82,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Mood Mixer',
+                  lp.translate('mood_mixer'),
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 21,
                     fontWeight: FontWeight.w700,
@@ -104,13 +98,13 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
             child: AnimatedSwitcher(
-              duration: 220.ms,
+              duration: const Duration(milliseconds: 220),
               child: Text(
                 _picked.isEmpty
-                    ? 'Pick any 2 styles to blend together'
+                    ? lp.translate('pick_2')
                     : _picked.length == 1
-                    ? 'Picked ${_picked[0].name} — choose one more'
-                    : '${_picked[0].name} + ${_picked[1].name} — ready to mix',
+                    ? '${lp.translate('picked')} ${lp.translate(_picked[0].id)} — ${lp.translate('choose_more')}'
+                    : '${lp.translate(_picked[0].id)} + ${lp.translate(_picked[1].id)} — ${lp.translate('ready_mix')}',
                 key: ValueKey(_picked.length),
                 style: GoogleFonts.inter(
                   fontSize: 14,
@@ -123,7 +117,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 2, 20, 0),
             child: Text(
-              'Lines will alternate between both styles for one combined mood.',
+              lp.translate('mood_mixer_desc'),
               style: GoogleFonts.inter(
                 fontSize: 12,
                 color: AppTheme.textSecondary,
@@ -131,14 +125,14 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
             ),
           ),
 
-          // Category grid
+          // Adaptive Grid
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 220,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
                 childAspectRatio: 0.95,
               ),
               itemCount: kCategories.length,
@@ -160,12 +154,12 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: AnimatedContainer(
-              duration: 200.ms,
+              duration: const Duration(milliseconds: 200),
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: readyToMix
                     ? const LinearGradient(
-                  colors: [AppTheme.primaryDark, AppTheme.primary],
+                  colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
@@ -173,9 +167,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 color: readyToMix ? null : AppTheme.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: readyToMix
-                      ? Colors.transparent
-                      : AppTheme.cardBorder,
+                  color: readyToMix ? Colors.transparent : AppTheme.cardBorder,
                   width: 0.5,
                 ),
                 boxShadow: readyToMix
@@ -206,8 +198,8 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                     const SizedBox(width: 8),
                     Text(
                       readyToMix
-                          ? 'Mix & Generate'
-                          : 'Pick 2 styles to continue',
+                          ? lp.translate('mix_generate')
+                          : lp.translate('pick_2_short'),
                       style: GoogleFonts.inter(
                         color: readyToMix
                             ? AppTheme.background
@@ -231,7 +223,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
 class _MixCard extends StatelessWidget {
   final FlirtCategory category;
   final int index;
-  final int? selectedOrder; // 1 or 2 if picked, else null
+  final int? selectedOrder;
   final VoidCallback onTap;
 
   const _MixCard({
@@ -243,36 +235,35 @@ class _MixCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     final isSelected = selectedOrder != null;
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: 200.ms,
+        duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? AppTheme.primary
-                : AppTheme.cardBorder,
+            color: isSelected ? Theme.of(context).colorScheme.primary : AppTheme.cardBorder,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? AppTheme.primary.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+              color: isSelected 
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15) 
+                  : Colors.black.withValues(alpha: 0.1),
               blurRadius: isSelected ? 16 : 8,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Stack(children: [
-          // Icon replaces emoji
           Padding(
             padding: const EdgeInsets.all(14),
             child: Container(
-              width: 36,
-              height: 36,
+              width: 36, height: 36,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: category.gradientColors,
@@ -289,7 +280,6 @@ class _MixCard extends StatelessWidget {
             ),
           ),
 
-          // Card content
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
             child: Column(
@@ -297,19 +287,20 @@ class _MixCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  category.name,
+                  lp.translate(category.id),
                   style: GoogleFonts.playfairDisplay(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
                   ),
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  category.tagline,
+                  lp.translate('${category.id}_tagline'),
                   style: GoogleFonts.inter(
                     fontSize: 10,
-                    color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
+                    color: isSelected ? Theme.of(context).colorScheme.primary : AppTheme.textSecondary,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -319,24 +310,22 @@ class _MixCard extends StatelessWidget {
             ),
           ),
 
-          // Selection order badge — "1" or "2"
           if (isSelected)
             Positioned(
               top: 10, right: 10,
               child: Container(
-                width: 22,
-                height: 22,
-                decoration: const BoxDecoration(
-                  color: AppTheme.primary,
+                width: 20, height: 20,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
                     '$selectedOrder',
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.background,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),

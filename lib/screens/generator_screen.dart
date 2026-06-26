@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/flirt_provider.dart';
+import '../providers/language_provider.dart';
 import '../theme/app_theme.dart';
 import '../data/arc_lines.dart';
 import '../widgets/glass_card.dart';
@@ -16,16 +17,16 @@ import 'favorites_screen.dart';
 /// Builds a short, readable summary of the active personalization/vibe for
 /// the badge row, e.g. "For Maya · loves hiking", "For Maya", "Just met",
 /// or "About: plays guitar · Reconnecting" when multiple are set.
-String _personalizationSummary(FlirtProvider provider) {
+String _personalizationSummary(FlirtProvider provider, LanguageProvider lp) {
   final name = provider.targetName;
   final trait = provider.targetTrait;
   final parts = <String>[];
   if (name.isNotEmpty && trait.isNotEmpty) {
-    parts.add('For $name · $trait');
+    parts.add('${lp.translate('for')} $name · $trait');
   } else if (name.isNotEmpty) {
-    parts.add('For $name');
+    parts.add('${lp.translate('for')} $name');
   } else if (trait.isNotEmpty) {
-    parts.add('About: $trait');
+    parts.add('${lp.translate('about')}: $trait');
   }
   if (provider.hasVibe) parts.add(provider.selectedVibe.label);
   return parts.join(' · ');
@@ -46,7 +47,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
   @override
   void initState() {
     super.initState();
-    _msgCtrl = AnimationController(vsync: this, duration: 400.ms);
+    _msgCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FlirtProvider>().generateLine();
     });
@@ -67,10 +68,12 @@ class _GeneratorScreenState extends State<GeneratorScreen>
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     final provider = context.watch<FlirtProvider>();
     final cat = provider.selectedCategory;
+    
     if (cat == null) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(child: Text('No category', style: TextStyle(color: AppTheme.textPrimary))),
       );
@@ -88,18 +91,18 @@ class _GeneratorScreenState extends State<GeneratorScreen>
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: Icon(
+                child: const Icon(
                   CupertinoIcons.chevron_left,
-                  color: AppTheme.primary,
+                  color: AppTheme.primaryPlatinum, // Using preset for consistency
                   size: 20,
                 ),
               ),
               const Spacer(),
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(cat.icon, color: AppTheme.primary, size: 17),
+                Icon(cat.icon, color: Theme.of(context).colorScheme.primary, size: 17),
                 const SizedBox(width: 6),
                 Text(
-                  cat.name,
+                  lp.translate(cat.id),
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -114,9 +117,9 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                   padding: const EdgeInsets.all(10),
                   onPressed: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const FavoritesScreen())),
-                  child: const Icon(
+                  child: Icon(
                     CupertinoIcons.heart,
-                    color: AppTheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     size: 22,
                   ),
                 ),
@@ -126,14 +129,14 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     child: Container(
                       width: 16, height: 16,
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryDark,
+                        color: Theme.of(context).colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           '$favCount',
-                          style: const TextStyle(
-                            color: AppTheme.background,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
@@ -151,11 +154,12 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             child: Row(
               children: ArcStage.values.map((stage) {
                 final isSelected = provider.arcStage == stage;
+                final accent = Theme.of(context).colorScheme.primary;
                 return Expanded(
                   child: GestureDetector(
                     onTap: () => provider.setArcStage(stage),
                     child: AnimatedContainer(
-                      duration: 200.ms,
+                      duration: const Duration(milliseconds: 200),
                       margin: EdgeInsets.only(
                         left: stage == ArcStage.opener ? 0 : 4,
                         right: stage == ArcStage.deeper ? 0 : 4,
@@ -163,12 +167,12 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primary.withValues(alpha: 0.12)
+                            ? accent.withValues(alpha: 0.12)
                             : AppTheme.surface,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isSelected
-                              ? AppTheme.primary.withValues(alpha: 0.4)
+                              ? accent.withValues(alpha: 0.4)
                               : AppTheme.cardBorder,
                           width: isSelected ? 1.5 : 0.5,
                         ),
@@ -179,13 +183,11 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                           Icon(
                             stage.icon,
                             size: 14,
-                            color: isSelected
-                                ? AppTheme.primary
-                                : AppTheme.textSecondary,
+                            color: isSelected ? accent : AppTheme.textSecondary,
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            stage.label,
+                            lp.translate('stage_${stage.name}'),
                             style: GoogleFonts.inter(
                               fontSize: 10,
                               color: isSelected
@@ -222,62 +224,48 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(cat.icon, color: AppTheme.textPrimary, size: 19),
+                  child: Icon(cat.icon, color: Colors.white, size: 19),
                 ),
                 const SizedBox(width: 12),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(
-                    cat.tagline.toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      color: AppTheme.textSecondary,
-                      letterSpacing: 1.0,
-                      fontWeight: FontWeight.w700,
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(
+                      lp.translate('${cat.id}_tagline').toUpperCase(),
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        color: AppTheme.textSecondary,
+                        letterSpacing: 1.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    cat.description,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppTheme.textPrimary.withValues(alpha: 0.8),
+                    Text(
+                      lp.translate('${cat.id}_desc'),
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: AppTheme.textPrimary.withValues(alpha: 0.8),
+                      ),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ]),
-                const Spacer(),
+                  ]),
+                ),
+                const SizedBox(width: 8),
+                // Mode pill
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppTheme.primary.withValues(alpha: 0.2),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                       width: 0.5,
                     ),
                   ),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(
-                      provider.isMixed
-                          ? CupertinoIcons.rectangle_stack
-                          : provider.isAiAvailable
-                          ? CupertinoIcons.sparkles
-                          : CupertinoIcons.infinite,
-                      size: 10,
-                      color: AppTheme.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      provider.isMixed
-                          ? 'Mix'
-                          : provider.isAiAvailable
-                          ? (provider.lastLineWasAi ? 'AI' : 'AI · offline')
-                          : 'Offline',
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ]),
+                  child: Icon(
+                    provider.isAiAvailable ? CupertinoIcons.sparkles : CupertinoIcons.infinite,
+                    size: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ]),
             ),
@@ -292,12 +280,12 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: provider.isCustomized
-                      ? AppTheme.primary.withValues(alpha: 0.08)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08)
                       : AppTheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: provider.isCustomized
-                        ? AppTheme.primary.withValues(alpha: 0.3)
+                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
                         : AppTheme.cardBorder,
                     width: 0.5,
                   ),
@@ -309,15 +297,15 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                         : CupertinoIcons.pencil,
                     size: 16,
                     color: provider.isCustomized
-                        ? AppTheme.primary
+                        ? Theme.of(context).colorScheme.primary
                         : AppTheme.textSecondary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       provider.isCustomized
-                          ? _personalizationSummary(provider)
-                          : 'Personalize with a name, detail, or vibe',
+                          ? _personalizationSummary(provider, lp)
+                          : lp.translate('personalize_hint'),
                       style: GoogleFonts.inter(
                         fontSize: 12.5,
                         color: provider.isCustomized
@@ -353,7 +341,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 const Spacer(),
                 Text(
                   provider.state == GeneratorState.loading
-                      ? 'GENERATING...'
+                      ? lp.translate('generating').toUpperCase()
                       : '#${provider.historyIndex + 1} OF ${provider.historyCount}',
                   style: GoogleFonts.inter(
                     fontSize: 11,
@@ -395,28 +383,6 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             ),
           ),
 
-          // Swipe hint
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Icon(
-                CupertinoIcons.arrow_left_right,
-                color: AppTheme.textMuted,
-                size: 12,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'SWIPE LEFT FOR NEW · RIGHT FOR PREVIOUS',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                  color: AppTheme.textMuted,
-                ),
-              ),
-            ]),
-          ),
-
           // Action buttons — row 1
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
@@ -424,9 +390,9 @@ class _GeneratorScreenState extends State<GeneratorScreen>
               _ActionBtn(
                 icon: CupertinoIcons.sparkles,
                 label: provider.state == GeneratorState.loading
-                    ? 'CRAFTING...'
-                    : 'NEW LINE',
-                gradient: const [AppTheme.primaryDark, AppTheme.primary],
+                    ? lp.translate('crafting')
+                    : lp.translate('new_line'),
+                gradient: [Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.primary],
                 enabled: provider.state != GeneratorState.loading,
                 isPrimary: true,
                 onTap: _animateAndGenerate,
@@ -437,8 +403,8 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                     ? CupertinoIcons.heart_fill
                     : CupertinoIcons.heart,
                 label: provider.isFavorited(provider.currentMessage)
-                    ? 'SAVED'
-                    : 'SAVE',
+                    ? lp.translate('saved')
+                    : lp.translate('save'),
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
                 onTap: () async {
@@ -453,20 +419,20 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                             isSaved
                                 ? CupertinoIcons.heart_fill
                                 : CupertinoIcons.heart_slash,
-                            color: AppTheme.background,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             size: 15,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             isSaved
-                                ? 'Added to favorites'
-                                : 'Removed from favorites',
+                                ? lp.translate('added_to_fav')
+                                : lp.translate('removed_from_fav'),
                             style: GoogleFonts.inter(
-                                fontSize: 13, color: AppTheme.background, fontWeight: FontWeight.w600),
+                                fontSize: 13, color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.w600),
                           ),
                         ]),
-                        duration: 1800.ms,
-                        backgroundColor: AppTheme.primary,
+                        duration: const Duration(milliseconds: 1800),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                       ),
                     );
                   }
@@ -481,7 +447,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
             child: Row(children: [
               _ActionBtn(
                 icon: CupertinoIcons.doc_on_doc,
-                label: 'COPY',
+                label: lp.translate('copy'),
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
                 onTap: () {
@@ -490,14 +456,14 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Row(children: [
-                        const Icon(CupertinoIcons.checkmark_circle,
-                            color: AppTheme.primary, size: 15),
+                        Icon(CupertinoIcons.checkmark_circle,
+                            color: Theme.of(context).colorScheme.primary, size: 15),
                         const SizedBox(width: 8),
-                        Text('Copied to clipboard',
+                        Text(lp.translate('copied'),
                             style: GoogleFonts.inter(
                                 fontSize: 13, color: AppTheme.textPrimary)),
                       ]),
-                      duration: 1500.ms,
+                      duration: const Duration(milliseconds: 1500),
                       backgroundColor: AppTheme.surfaceLight,
                     ),
                   );
@@ -506,7 +472,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
               const SizedBox(width: 10),
               _ActionBtn(
                 icon: CupertinoIcons.share,
-                label: 'SHARE',
+                label: lp.translate('share'),
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
                 onTap: () => Share.share(provider.currentMessage),
@@ -532,6 +498,7 @@ class _MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = Theme.of(context).colorScheme.primary;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -555,7 +522,7 @@ class _MessageCard extends StatelessWidget {
           child: Icon(
             CupertinoIcons.quote_bubble,
             size: 52,
-            color: AppTheme.primary.withValues(alpha: 0.06),
+            color: accent.withValues(alpha: 0.06),
           ),
         ),
         // Glow
@@ -566,7 +533,7 @@ class _MessageCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(colors: [
-                AppTheme.primary.withValues(alpha: 0.04),
+                accent.withValues(alpha: 0.04),
                 Colors.transparent,
               ]),
             ),
@@ -576,14 +543,15 @@ class _MessageCard extends StatelessWidget {
         Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
-            child: _buildContent(),
+            child: _buildContent(context),
           ),
         ),
       ]),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     switch (provider.state) {
       case GeneratorState.loading:
         return const ShimmerLoading();
@@ -597,7 +565,7 @@ class _MessageCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Something went wrong',
+            lp.translate('error_title'),
             style: GoogleFonts.playfairDisplay(
               fontSize: 18,
               color: AppTheme.textPrimary,
@@ -618,10 +586,10 @@ class _MessageCard extends StatelessWidget {
             padding: EdgeInsets.zero,
             onPressed: () => provider.generateLine(),
             child: Text(
-              'Tap to retry',
+              lp.translate('tap_to_retry'),
               style: GoogleFonts.inter(
                 fontSize: 13,
-                color: AppTheme.primary,
+                color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -630,7 +598,7 @@ class _MessageCard extends StatelessWidget {
 
       case GeneratorState.success:
         return AnimatedSwitcher(
-          duration: 350.ms,
+          duration: const Duration(milliseconds: 350),
           transitionBuilder: (child, anim) => FadeTransition(
             opacity: anim,
             child: SlideTransition(
@@ -657,7 +625,7 @@ class _MessageCard extends StatelessWidget {
 
       default:
         return Text(
-          'TAP "NEW LINE" TO BEGIN',
+          lp.translate('tap_begin').toUpperCase(),
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w700,
@@ -687,7 +655,7 @@ class _NavBtn extends StatelessWidget {
       onTap: enabled ? onTap : null,
       child: AnimatedOpacity(
         opacity: enabled ? 1.0 : 0.2,
-        duration: 200.ms,
+        duration: const Duration(milliseconds: 200),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
@@ -729,7 +697,7 @@ class _ActionBtn extends StatelessWidget {
         onTap: enabled ? onTap : null,
         child: AnimatedOpacity(
           opacity: enabled ? 1.0 : 0.35,
-          duration: 200.ms,
+          duration: const Duration(milliseconds: 200),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
@@ -745,7 +713,7 @@ class _ActionBtn extends StatelessWidget {
               boxShadow: isPrimary
                   ? [
                 BoxShadow(
-                  color: AppTheme.primaryDark.withValues(alpha: 0.2),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -755,7 +723,7 @@ class _ActionBtn extends StatelessWidget {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Icon(
                 icon,
-                color: isPrimary ? AppTheme.background : AppTheme.textPrimary,
+                color: isPrimary ? Theme.of(context).colorScheme.onPrimary : AppTheme.textPrimary,
                 size: 20,
               ),
               const SizedBox(height: 4),
@@ -763,7 +731,7 @@ class _ActionBtn extends StatelessWidget {
                 label,
                 style: GoogleFonts.inter(
                   fontSize: 10,
-                  color: isPrimary ? AppTheme.background : AppTheme.textPrimary,
+                  color: isPrimary ? Theme.of(context).colorScheme.onPrimary : AppTheme.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.5,
                 ),

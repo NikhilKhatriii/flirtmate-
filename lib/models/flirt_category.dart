@@ -1,23 +1,16 @@
 import 'package:flutter/cupertino.dart';
 
-// ---------------------------------------------------------------------------
-// VIP Lounge - Luxury Design System
-// ---------------------------------------------------------------------------
-// Colors:
-//   background_dark: #121418
-//   surface_card: #1F2229
-//   text_primary_silver: #E0E3E8
-//   text_secondary_muted: #8A909A
-//   accent_gold: #E5C07B
-//   accent_gold_variant: #D4AF37
-// ---------------------------------------------------------------------------
-
 class FlirtCategory {
   final String id;
+  
+  /// English name for AI prompting
   final String name;
+  
   final IconData icon;
-  final String description;
+
+  /// English tagline for AI prompting
   final String tagline;
+
   final List<Color> gradientColors;
   final String styleHint;
 
@@ -25,7 +18,6 @@ class FlirtCategory {
     required this.id,
     required this.name,
     required this.icon,
-    required this.description,
     required this.tagline,
     required this.gradientColors,
     required this.styleHint,
@@ -100,7 +92,6 @@ FlirtCategory buildMixedCategory(FlirtCategory a, FlirtCategory b) {
     id: 'mix:${ids[0]}+${ids[1]}',
     name: '${a.name} + ${b.name}',
     icon: CupertinoIcons.rectangle_stack,
-    description: 'A blend of ${a.name.toLowerCase()} and ${b.name.toLowerCase()}',
     tagline: 'Mixed mood',
     gradientColors: [a.gradientColors.first, b.gradientColors.last],
     styleHint: '${a.styleHint}; also blended with: ${b.styleHint}',
@@ -112,126 +103,112 @@ final List<FlirtCategory> kCategories = [
     id: 'romantic',
     name: 'Romantic',
     icon: CupertinoIcons.heart,
-    description: 'Deep, heartfelt, poetic love lines',
     tagline: 'Touch the heart',
-    gradientColors: [Color(0xFF2C3039), Color(0xFFE5C07B)], // charcoal → champagne gold
+    gradientColors: [Color(0xFF2C3039), Color(0xFFE5C07B)],
     styleHint: 'deeply romantic, poetic, heartfelt, uses beautiful metaphors about love',
   ),
   const FlirtCategory(
     id: 'funny',
     name: 'Funny',
     icon: CupertinoIcons.smiley,
-    description: 'Humorous, punny, laugh-inducing pickup lines',
     tagline: 'Make them laugh',
-    gradientColors: [Color(0xFF2C3039), Color(0xFFA2845E)], // charcoal → bronze
+    gradientColors: [Color(0xFF2C3039), Color(0xFFA2845E)],
     styleHint: 'genuinely funny, uses clever wordplay and puns, witty',
   ),
   const FlirtCategory(
     id: 'light',
     name: 'Light',
     icon: CupertinoIcons.sun_max,
-    description: 'Soft, innocent, casual sweet compliments',
     tagline: 'Keep it sweet',
-    gradientColors: [Color(0xFF2C3039), Color(0xFF8A909A)], // charcoal → silver
+    gradientColors: [Color(0xFF2C3039), Color(0xFF8A909A)],
     styleHint: 'light, sweet, innocent, casual and warm compliments',
   ),
   const FlirtCategory(
     id: 'playful',
     name: 'Playful',
     icon: CupertinoIcons.game_controller,
-    description: 'Teasing, witty banter-style flirts',
     tagline: 'Fun & teasing',
-    gradientColors: [Color(0xFF1F2229), Color(0xFFD4AF37)], // surface → metallic gold
+    gradientColors: [Color(0xFF1F2229), Color(0xFFD4AF37)],
     styleHint: 'playfully teasing, witty banter, confident yet fun',
   ),
   const FlirtCategory(
     id: 'classy',
     name: 'Classy',
     icon: CupertinoIcons.briefcase,
-    description: 'Elegant, sophisticated, refined charm lines',
     tagline: 'Effortless elegance',
-    gradientColors: [Color(0xFF121418), Color(0xFFE5C07B)], // background → champagne gold
+    gradientColors: [Color(0xFF121418), Color(0xFFE5C07B)],
     styleHint: 'highly sophisticated, elegant, uses refined vocabulary, old-world charm',
   ),
   const FlirtCategory(
     id: 'confident',
     name: 'Confident',
     icon: CupertinoIcons.bolt,
-    description: 'Bold, self-assured, alpha openers',
     tagline: 'Own the room',
-    gradientColors: [Color(0xFF1F2229), Color(0xFFE0E3E8)], // surface → metallic silver
+    gradientColors: [Color(0xFF1F2229), Color(0xFFE0E3E8)],
     styleHint: 'boldly confident, self-assured, direct and strong without arrogance',
   ),
   const FlirtCategory(
     id: 'shy',
     name: 'Shy',
     icon: CupertinoIcons.leaf_arrow_circlepath,
-    description: 'Nervous, cute, adorably awkward messages',
     tagline: 'Adorably real',
-    gradientColors: [Color(0xFF1F2229), Color(0xFF636971)], // surface → muted gray
+    gradientColors: [Color(0xFF1F2229), Color(0xFF636971)],
     styleHint: 'nervously sweet, adorably awkward, genuine and vulnerable',
   ),
   const FlirtCategory(
     id: 'mysterious',
     name: 'Mysterious',
     icon: CupertinoIcons.moon,
-    description: 'Dark, intriguing, pull-them-closer vibes',
     tagline: 'Leave them curious',
-    gradientColors: [Color(0xFF0B0B0D), Color(0xFF8A909A)], // deep black → silver gray
+    gradientColors: [Color(0xFF0B0B0D), Color(0xFF8A909A)],
     styleHint: 'deeply intriguing, mysterious and enigmatic, pulls them closer',
   ),
   const FlirtCategory(
     id: 'spicy',
     name: 'Spicy',
     icon: CupertinoIcons.flame,
-    description: 'Hot, passionate, intense messages',
     tagline: 'Turn up the heat',
-    gradientColors: [Color(0xFF1F2229), Color(0xFFD4AF37)], // surface → metallic gold
+    gradientColors: [Color(0xFF1F2229), Color(0xFFD4AF37)],
     styleHint: 'passionately intense, bold and fiery, tastefully forward',
   ),
   const FlirtCategory(
     id: 'oldschool',
     name: 'Old-School',
     icon: CupertinoIcons.envelope,
-    description: 'Vintage, letter-style, classic romantic charm',
     tagline: 'Timeless romance',
-    gradientColors: [Color(0xFF1F2229), Color(0xFFE5C07B)], // surface → gold
+    gradientColors: [Color(0xFF1F2229), Color(0xFFE5C07B)],
     styleHint: 'vintage and classic, letter-writing style, old-fashioned romantic charm',
   ),
   const FlirtCategory(
     id: 'nerdy',
     name: 'Nerdy',
     icon: CupertinoIcons.square_grid_3x2,
-    description: 'Clever science, tech and geek-themed flirts',
     tagline: 'Geek is chic',
-    gradientColors: [Color(0xFF1F2229), Color(0xFF8A909A)], // surface → silver
+    gradientColors: [Color(0xFF1F2229), Color(0xFF8A909A)],
     styleHint: 'uses science, math, tech or pop-culture geek references cleverly',
   ),
   const FlirtCategory(
     id: 'wholesome',
     name: 'Wholesome',
     icon: CupertinoIcons.hand_thumbsup,
-    description: 'Pure, kind, affirming feel-good messages',
     tagline: 'Warm the soul',
-    gradientColors: [Color(0xFF1F2229), Color(0xFFE0E3E8)], // surface → metallic silver
+    gradientColors: [Color(0xFF1F2229), Color(0xFFE0E3E8)],
     styleHint: 'genuinely wholesome, kind, uplifting and feel-good',
   ),
   const FlirtCategory(
     id: 'smooth',
     name: 'Smooth',
     icon: CupertinoIcons.mic,
-    description: 'Ultra-cool, James Bond-style one-liners',
     tagline: 'Ice cold delivery',
-    gradientColors: [Color(0xFF121418), Color(0xFFD4AF37)], // background → metallic gold
+    gradientColors: [Color(0xFF121418), Color(0xFFD4AF37)],
     styleHint: 'ultra-smooth and cool, effortless charm, James Bond confidence',
   ),
   const FlirtCategory(
     id: 'poetic',
     name: 'Poetic',
     icon: CupertinoIcons.text_quote,
-    description: 'Lyrical, verse-inspired, beautiful messages',
     tagline: 'Pure artistry',
-    gradientColors: [Color(0xFF121418), Color(0xFFE5C07B)], // background → champagne gold
+    gradientColors: [Color(0xFF121418), Color(0xFFE5C07B)],
     styleHint: 'lyrical and poetic, uses verse-like rhythm and vivid imagery',
   ),
 ];

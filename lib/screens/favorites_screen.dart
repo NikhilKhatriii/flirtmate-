@@ -217,7 +217,7 @@ class _FavoriteItem extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Icon(
+            Icon(
               CupertinoIcons.text_quote,
               size: 15,
               color: AppTheme.primary,

@@ -19,10 +19,9 @@ class AppTheme {
   static const Color primaryChampagne = Color(0xFFE5C07B);
   static const Color primaryTeal = Color(0xFF00E5FF);
 
-  // Legacy support for files not yet using colorScheme
-  // Note: These are getters, so they cannot be used in 'const' constructors.
-  static Color get primary => primaryPlatinum; 
-  static Color get primaryDark => const Color(0xFFB0B3B8);
+  // Constants for usage in const constructors
+  static const Color primary = primaryPlatinum;
+  static const Color primaryDark = Color(0xFFB0B3B8);
 
   /// Dynamically generates a production-ready theme based on mode and accent.
   static ThemeData buildTheme({

@@ -1,7 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
+import 'dart:math' as math;
 import '../theme/app_theme.dart';
+import '../providers/language_provider.dart';
 import '../widgets/gradient_text.dart';
 import 'category_screen.dart';
 
@@ -11,199 +15,272 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _pulseCtrl;
-  late Animation<double> _pulseAnim;
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+  late AnimationController _rotationCtrl;
 
   @override
   void initState() {
     super.initState();
-    _pulseCtrl = AnimationController(vsync: this, duration: 2200.ms)
-      ..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 1.0, end: 1.06).animate(
-        CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+    _rotationCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
   }
 
   @override
   void dispose() {
-    _pulseCtrl.dispose();
+    _rotationCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
+    
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.surfaceLight, AppTheme.background],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _pulseAnim,
-                  builder: (_, __) => Transform.scale(
-                    scale: _pulseAnim.value,
-                    child: Container(
-                      width: 104,
-                      height: 104,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppTheme.primary, AppTheme.primaryDark],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primary.withValues(alpha: 0.35),
-                            blurRadius: 36,
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.favorite_rounded,
-                        color: Colors.white,
-                        size: 46,
-                      ),
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.3),
-
-                const SizedBox(height: 28),
-
-                GradientText(
-                  'FlirtMate',
-                  colors: const [AppTheme.textPrimary, AppTheme.textSecondary],
-                  style: GoogleFonts.inter(
-                    fontSize: 44,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.8,
-                  ),
-                ).animate(delay: 200.ms).fadeIn(duration: 600.ms).slideY(begin: 0.2),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  'Say it better. Say it right.',
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    color: AppTheme.textSecondary,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.2,
-                  ),
-                ).animate(delay: 400.ms).fadeIn(duration: 600.ms),
-
-                const SizedBox(height: 14),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppTheme.cardBorder),
-                    borderRadius: BorderRadius.circular(20),
-                    color: AppTheme.surfaceLight.withValues(alpha: 0.6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.auto_awesome_rounded,
-                          size: 14, color: AppTheme.primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        '14 MOODS · INFINITE LINES',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: AppTheme.textSecondary,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
-
-                const SizedBox(height: 56),
-
-                _GetStartedButton(
-                  onTap: () => Navigator.pushReplacement(
-                      context, MaterialPageRoute(builder: (_) => const CategoryScreen())),
-                ).animate(delay: 700.ms).fadeIn(duration: 600.ms).slideY(begin: 0.3),
-
-                const SizedBox(height: 22),
-
-                Text(
-                  '14 moods · Always fresh · Always free',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AppTheme.textMuted,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ).animate(delay: 900.ms).fadeIn(),
-              ],
+      backgroundColor: const Color(0xFF0A0A14), // Ultra deep midnight
+      body: Stack(
+        children: [
+          // 1. Background Layers (Celestial/Constellation)
+          const _CelestialBackground(),
+          
+          // 2. Rotating Astrological Ring (Subtle)
+          Center(
+            child: RotationTransition(
+              turns: _rotationCtrl,
+              child: Opacity(
+                opacity: 0.15,
+                child: CustomPaint(
+                  size: const Size(600, 600),
+                  painter: _AstrologicalPainter(),
+                ),
+              ),
             ),
           ),
-        ),
+
+          // 3. Main Content
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 3),
+                  
+                  // Central Logo - The Metallic Plate & Crystal Heart
+                  const _LuxuryLogo(),
+                  
+                  const SizedBox(height: 48),
+
+                  // App Name - Silver Gradient
+                  GradientText(
+                    lp.translate('app_name'),
+                    colors: const [Color(0xFFE2E5E9), Color(0xFF989CA3)],
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 52,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1,
+                    ),
+                  ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.2, curve: Curves.easeOut),
+
+                  const SizedBox(height: 12),
+
+                  // Tagline
+                  Text(
+                    lp.translate('tagline_splash'),
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      color: AppTheme.textSecondary.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.5,
+                    ),
+                  ).animate(delay: 300.ms).fadeIn(duration: 800.ms),
+
+                  const SizedBox(height: 24),
+
+                  // Feature Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                      color: Colors.black.withValues(alpha: 0.3),
+                    ),
+                    child: Text(
+                      '✦ 14 CURATED MOODS · UNLIMITED LINES ✦',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ).animate(delay: 500.ms).fadeIn(duration: 800.ms),
+
+                  const Spacer(flex: 2),
+
+                  // Action Button
+                  _LuxuryStartButton(
+                    onTap: () => Navigator.pushReplacement(
+                        context, MaterialPageRoute(builder: (_) => const CategoryScreen())),
+                  ).animate(delay: 800.ms).fadeIn(duration: 800.ms).slideY(begin: 0.4, curve: Curves.easeOut),
+
+                  const SizedBox(height: 24),
+
+                  // Footer
+                  Text(
+                    'Explore 14 Detailed Moods. Enjoy Fresh Daily Content. Forever Free to Use.',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: AppTheme.textMuted,
+                    ),
+                  ).animate(delay: 1200.ms).fadeIn(),
+                  
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _GetStartedButton extends StatefulWidget {
-  final VoidCallback onTap;
-  const _GetStartedButton({required this.onTap});
+class _LuxuryLogo extends StatelessWidget {
+  const _LuxuryLogo();
+
   @override
-  State<_GetStartedButton> createState() => _GetStartedButtonState();
+  Widget build(BuildContext context) {
+    return Container(
+      width: 220, height: 220,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+            blurRadius: 60, spreadRadius: 10,
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Outer Metallic Ring
+          Container(
+            width: 210, height: 210,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF505458), Color(0xFF1B1D21), Color(0xFF505458)],
+              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+            ),
+          ),
+          // Inner Brushed Ring
+          Container(
+            width: 190, height: 190,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const SweepGradient(
+                colors: [Color(0xFF2C3035), Color(0xFF4A4E54), Color(0xFF2C3035)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 10, spreadRadius: 2, offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+          ),
+          // Reflection Highlight
+          Positioned(
+            top: 20, left: 20,
+            child: Container(
+              width: 150, height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [Colors.white.withValues(alpha: 0.08), Colors.transparent],
+                  center: Alignment.topLeft,
+                ),
+              ),
+            ),
+          ),
+          // Crystal Heart Icon
+          _CrystalHeart(),
+        ],
+      ),
+    ).animate().scale(duration: 1000.ms, curve: Curves.elasticOut);
+  }
 }
 
-class _GetStartedButtonState extends State<_GetStartedButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale;
+class _CrystalHeart extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Glow behind heart
+        const Icon(CupertinoIcons.heart_fill, size: 90, color: Color(0xFF6C5CE7))
+            .animate(onPlay: (c) => c.repeat(reverse: true))
+            .blurXY(begin: 10, end: 30, duration: 2000.ms),
+            
+        // The Crystal Base
+        ShaderMask(
+          shaderCallback: (bounds) => const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFE0C3FC), Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+          ).createShader(bounds),
+          child: const Icon(CupertinoIcons.heart_fill, size: 84, color: Colors.white),
+        ),
+        
+        // Sparkle highlights
+        const Icon(CupertinoIcons.heart, size: 84, color: Colors.white24),
+      ],
+    );
+  }
+}
 
+class _LuxuryStartButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _LuxuryStartButton({required this.onTap});
+  @override
+  State<_LuxuryStartButton> createState() => _LuxuryStartButtonState();
+}
+
+class _LuxuryStartButtonState extends State<_LuxuryStartButton> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
   @override
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: 150.ms);
-    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
-        CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
-
   @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
-      onTapUp: (_) {
-        _ctrl.reverse();
-        widget.onTap();
-      },
+      onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
       onTapCancel: () => _ctrl.reverse(),
-      child: AnimatedBuilder(
-        animation: _scale,
-        builder: (_, child) => Transform.scale(scale: _scale.value, child: child),
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 1.0, end: 0.95).animate(_ctrl),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 17),
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
           decoration: BoxDecoration(
-            color: AppTheme.primary,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(50),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF323639), Color(0xFF121416)],
+            ),
+            border: Border.all(color: const Color(0xFFE2E5E9).withValues(alpha: 0.4), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primary.withValues(alpha: 0.35),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
+                color: Colors.white.withValues(alpha: 0.1),
+                blurRadius: 20, offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -211,20 +288,86 @@ class _GetStartedButtonState extends State<_GetStartedButton>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Get Started',
+                lp.translate('get_started').toUpperCase(),
                 style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  letterSpacing: 0.2,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFFE2E5E9),
+                  letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              const Icon(CupertinoIcons.arrow_right, color: Color(0xFFE2E5E9), size: 16),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+class _CelestialBackground extends StatelessWidget {
+  const _CelestialBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.center,
+          radius: 1.2,
+          colors: [Color(0xFF1A1A2F), Color(0xFF05050A)],
+        ),
+      ),
+      child: Stack(
+        children: List.generate(50, (index) {
+          final random = math.Random(index);
+          return Positioned(
+            left: random.nextDouble() * MediaQuery.of(context).size.width,
+            top: random.nextDouble() * MediaQuery.of(context).size.height,
+            child: Container(
+              width: random.nextDouble() * 2 + 1,
+              height: random.nextDouble() * 2 + 1,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: random.nextDouble() * 0.5),
+                shape: BoxShape.circle,
+              ),
+            ).animate(onPlay: (c) => c.repeat(reverse: true))
+             .fadeIn(duration: (1000 + random.nextInt(2000)).ms),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _AstrologicalPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.5)
+      ..strokeWidth = 0.5
+      ..style = PaintingStyle.stroke;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    
+    // Draw concentric thin circles
+    canvas.drawCircle(center, size.width * 0.45, paint);
+    canvas.drawCircle(center, size.width * 0.38, paint);
+    
+    // Draw cross lines
+    canvas.drawLine(Offset(0, size.height / 2), Offset(size.width, size.height / 2), paint);
+    canvas.drawLine(Offset(size.width / 2, 0), Offset(size.width / 2, size.height), paint);
+
+    // Draw some random connection lines for constellation feel
+    for (int i = 0; i < 12; i++) {
+      double angle = i * (2 * math.pi / 12);
+      double x = center.dx + size.width * 0.45 * math.cos(angle);
+      double y = center.dy + size.height * 0.45 * math.sin(angle);
+      canvas.drawLine(center, Offset(x, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
