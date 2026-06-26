@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
+import '../services/analytics_service.dart';
 
 enum ThemePreset { platinum, champagne, teal, custom }
 
@@ -50,6 +51,7 @@ class ThemeProvider extends ChangeNotifier {
 
   Future<void> setPreset(ThemePreset preset) async {
     _currentPreset = preset;
+    AnalyticsService.themeChanged(preset.name);
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_presetKey, preset.index);
@@ -58,6 +60,7 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> setCustomColor(Color color) async {
     _customAccent = color;
     _currentPreset = ThemePreset.custom;
+    AnalyticsService.themeChanged('#' + color.toARGB32().toRadixString(16).padLeft(8, '0'));
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_presetKey, ThemePreset.custom.index);

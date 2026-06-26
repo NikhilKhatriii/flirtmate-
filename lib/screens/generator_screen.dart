@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/flirt_provider.dart';
 import '../providers/language_provider.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../data/arc_lines.dart';
 import '../widgets/glass_card.dart';
@@ -451,6 +452,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
                 onTap: () {
+                  AnalyticsService.lineCopied(cat.id);
                   Clipboard.setData(
                       ClipboardData(text: provider.currentMessage));
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -475,7 +477,10 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 label: lp.translate('share'),
                 enabled: provider.currentMessage.isNotEmpty &&
                     provider.state == GeneratorState.success,
-                onTap: () => Share.share(provider.currentMessage),
+                onTap: () {
+                  AnalyticsService.lineShared(cat.id);
+                  Share.share(provider.currentMessage);
+                },
               ),
             ]),
           ),

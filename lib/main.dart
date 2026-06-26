@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'providers/flirt_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
 import 'screens/splash_screen.dart';
+import 'services/auth_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Perform anonymous sign-in in the background
+  AuthService.signInAnonymously();
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   
   runApp(
@@ -33,8 +42,6 @@ class FlirtMateApp extends StatelessWidget {
       title: 'FlirtMate',
       debugShowCheckedModeBanner: false,
       theme: themeProvider.themeData,
-      // Localization is handled reactively by LanguageProvider
-      // rather than standard delegate approach to support "Zero-Reboot"
       home: const SplashScreen(),
     );
   }

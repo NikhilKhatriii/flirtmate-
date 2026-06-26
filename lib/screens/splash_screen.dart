@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../theme/app_theme.dart';
 import '../providers/language_provider.dart';
+import '../services/analytics_service.dart';
 import '../widgets/gradient_text.dart';
 import 'category_screen.dart';
 
@@ -21,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
+    AnalyticsService.screenView('splash_screen');
     _rotationCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
   }
 

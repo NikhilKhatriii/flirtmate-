@@ -6,6 +6,7 @@ import '../models/vibe.dart';
 import '../services/api_service.dart';
 import '../data/offline_lines.dart';
 import '../data/arc_lines.dart';
+import '../services/analytics_service.dart';
 
 enum GeneratorState { idle, loading, success, error }
 
@@ -99,6 +100,7 @@ class FlirtProvider extends ChangeNotifier {
   Future<void> setPersonalization({String? name, String? trait}) async {
     _targetName = (name ?? _targetName).trim();
     _targetTrait = (trait ?? _targetTrait).trim();
+    AnalyticsService.personalizationUsed();
     if (_selectedCategory != null) {
       _offlineQueue.remove('${_selectedCategory!.id}:${ArcStage.opener.name}');
     }
@@ -112,6 +114,7 @@ class FlirtProvider extends ChangeNotifier {
   /// vibe-specific lines, so vibe has no effect when running offline.
   Future<void> setVibe(String? vibeId) async {
     _vibeId = vibeId ?? kNoVibe.id;
+    AnalyticsService.vibeSelected(_vibeId);
     notifyListeners();
     await _saveVibe();
   }
@@ -136,6 +139,7 @@ class FlirtProvider extends ChangeNotifier {
 
   void selectCategory(FlirtCategory cat) {
     _selectedCategory = cat;
+    AnalyticsService.categorySelected(cat.id);
     _mixSources = null;
     _sessionHistory = [];
     _historyIndex = -1;
@@ -149,6 +153,7 @@ class FlirtProvider extends ChangeNotifier {
   /// offline pool (or, in AI mode, generated from a combined style hint).
   void selectMixedCategories(FlirtCategory a, FlirtCategory b) {
     _mixSources = (a, b);
+    AnalyticsService.moodMixerUsed(a.id, b.id);
     _selectedCategory = buildMixedCategory(a, b);
     _sessionHistory = [];
     _historyIndex = -1;
@@ -209,6 +214,7 @@ class FlirtProvider extends ChangeNotifier {
       _sessionHistory.add(line);
       _historyIndex = _sessionHistory.length - 1;
       _currentMessage = line;
+      AnalyticsService.lineGenerated(_selectedCategory!.id, _lastLineWasAi);
       _state = GeneratorState.success;
       _totalGenerated++;
       notifyListeners();
@@ -302,6 +308,7 @@ class FlirtProvider extends ChangeNotifier {
     if (existing >= 0) {
       _favorites.removeAt(existing);
     } else {
+      AnalyticsService.lineFavorited(_selectedCategory!.id);
       _favorites.insert(
         0,
         FavoriteMessage(

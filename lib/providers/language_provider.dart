@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/localization_service.dart';
+import '../services/analytics_service.dart';
 
 class LanguageProvider extends ChangeNotifier {
   static const String _langKey = 'fm_user_language';
@@ -17,6 +18,7 @@ class LanguageProvider extends ChangeNotifier {
   Future<void> setLanguage(AppLanguage lang) async {
     if (_currentLanguage == lang) return;
     _currentLanguage = lang;
+    AnalyticsService.languageChanged(lang.name);
     LocalizationService.setLanguage(lang);
     notifyListeners();
     
