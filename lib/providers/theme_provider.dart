@@ -60,7 +60,7 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> setCustomColor(Color color) async {
     _customAccent = color;
     _currentPreset = ThemePreset.custom;
-    AnalyticsService.themeChanged('#' + color.toARGB32().toRadixString(16).padLeft(8, '0'));
+    AnalyticsService.themeChanged('#${color.toARGB32().toRadixString(16).padLeft(8, '0')}');
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_presetKey, ThemePreset.custom.index);

@@ -33,7 +33,7 @@ class FavoritesScreen extends StatelessWidget {
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: Icon(
+                child: const Icon(
                   CupertinoIcons.chevron_left,
                   color: AppTheme.primary,
                   size: 20,
@@ -217,7 +217,7 @@ class _FavoriteItem extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(
+            const Icon(
               CupertinoIcons.text_quote,
               size: 15,
               color: AppTheme.primary,
@@ -280,7 +280,7 @@ class _FavoriteItem extends StatelessWidget {
                             style: GoogleFonts.inter(
                                 fontSize: 13, color: AppTheme.background, fontWeight: FontWeight.w600)),
                       ]),
-                      duration: 1500.ms,
+                      duration: const Duration(milliseconds: 1500),
                       backgroundColor: AppTheme.primary,
                     ),
                   );

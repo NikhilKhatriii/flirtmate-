@@ -109,7 +109,7 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                       color: AppTheme.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(Icons.tune_rounded,
+                    child: const Icon(Icons.tune_rounded,
                         color: AppTheme.primary, size: 18),
                   ),
                   const SizedBox(width: 10),
@@ -183,8 +183,8 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
                           if (selected)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 6),
+                            const Padding(
+                              padding: EdgeInsets.only(right: 6),
                               child: Icon(Icons.check_rounded,
                                   size: 14, color: AppTheme.primary),
                             ),
@@ -268,7 +268,7 @@ class _PersonalizeField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppTheme.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
         ),
       ),
     );

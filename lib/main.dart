@@ -11,11 +11,15 @@ import 'services/auth_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp();
-  
-  // Perform anonymous sign-in in the background
-  AuthService.signInAnonymously();
+  // Initialize Firebase with safety for different platforms (Web/Android)
+  try {
+    await Firebase.initializeApp();
+    // Perform anonymous sign-in in the background only if init succeeded
+    AuthService.signInAnonymously();
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+    // We continue so the app still runs even if Firebase fails (common on Web during setup)
+  }
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   

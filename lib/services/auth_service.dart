@@ -2,12 +2,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthService {
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static FirebaseAuth? get _auth {
+    try {
+      return FirebaseAuth.instance;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Performs anonymous sign-in. This is intended to be called on first launch.
   static Future<UserCredential?> signInAnonymously() async {
     try {
-      final userCredential = await _auth.signInAnonymously();
+      final auth = _auth;
+      if (auth == null) return null;
+      
+      final userCredential = await auth.signInAnonymously();
       if (kDebugMode) {
         print("Signed in with temporary account: ${userCredential.user?.uid}");
       }
@@ -21,5 +30,5 @@ class AuthService {
   }
 
   /// Returns the current user if one exists.
-  static User? get currentUser => _auth.currentUser;
+  static User? get currentUser => _auth?.currentUser;
 }

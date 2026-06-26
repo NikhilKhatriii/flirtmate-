@@ -64,7 +64,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: Icon(
+                child: const Icon(
                   CupertinoIcons.chevron_left,
                   color: AppTheme.primaryPlatinum,
                   size: 20,
@@ -74,7 +74,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 Container(
                   width: 28, height: 28,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -165,7 +165,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: readyToMix
-                    ? LinearGradient(
+                    ? const LinearGradient(
                   colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -220,9 +220,8 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 ),
               ),
             ).animate(target: readyToMix ? 1 : 0)
-             .shimmer(duration: 1200.ms, color: Colors.white.withValues(alpha: 0.2))
-             .scale(begin: const Offset(1, 1), end: const Offset(1.02, 1.02), duration: 600.ms, curve: Curves.easeInOutSine),
-
+             .shimmer(duration: const Duration(milliseconds: 1200), color: Colors.white.withValues(alpha: 0.2))
+             .scale(begin: const Offset(1, 1), end: const Offset(1.02, 1.02), duration: const Duration(milliseconds: 600), curve: Curves.easeInOutSine),
           ),
         ]),
       ),
@@ -241,7 +240,6 @@ class _MixCard extends StatefulWidget {
     required this.index,
     required this.selectedOrder,
     required this.onTap,
-    super.key,
   });
 
   @override
@@ -369,10 +367,10 @@ class _MixCardState extends State<_MixCard> with SingleTickerProviderStateMixin 
                     ),
                   ),
                 ),
-              ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
+              ).animate().scale(duration: const Duration(milliseconds: 400), curve: Curves.elasticOut),
           ]),
         ),
       ),
-    ).animate(delay: (widget.index * 30).ms).fadeIn(duration: 350.ms).slideY(begin: 0.08);
+    ).animate(delay: (widget.index * 30).ms).fadeIn(duration: const Duration(milliseconds: 350)).slideY(begin: 0.08);
   }
 }

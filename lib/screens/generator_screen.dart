@@ -75,7 +75,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     final cat = provider.selectedCategory;
     
     if (cat == null) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(child: Text('No category', style: TextStyle(color: AppTheme.textPrimary))),
       );
@@ -93,7 +93,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 onPressed: () => Navigator.pop(context),
-                child: Icon(
+                child: const Icon(
                   CupertinoIcons.chevron_left,
                   color: AppTheme.primaryPlatinum, // Using preset for consistency
                   size: 20,
@@ -554,7 +554,7 @@ class _MessageCard extends StatelessWidget {
         ),
       ]),
     ).animate(onPlay: (c) => c.repeat(reverse: true))
-     .moveY(begin: 0, end: 6, duration: 2500.ms, curve: Curves.easeInOutSine);
+     .moveY(begin: 0, end: 6, duration: const Duration(milliseconds: 2500), curve: Curves.easeInOutSine);
   }
 
   Widget _buildContent(BuildContext context) {
