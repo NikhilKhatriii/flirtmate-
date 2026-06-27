@@ -3,21 +3,24 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ---------------------------------------------------------------------------
-  // Professional Enterprise Design Tokens
+  // Luxury High-Fidelity Design Tokens
   // ---------------------------------------------------------------------------
-  static const Color background = Color(0xFF0F172A); // Deep Navy
-  static const Color surface = Color(0xFF1E293B);
-  static const Color surfaceLight = Color(0xFF334155);
-  static const Color cardBorder = Color(0xFF475569);
+  static const Color background = Color(0xFF03030F); // Ultra Deep Midnight
+  static const Color surface = Color(0xFF0F172A);
+  static const Color surfaceLight = Color(0xFF1E293B);
+  static const Color cardBorder = Color(0xFF334155);
 
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Color(0xFF94A3B8);
   static const Color textMuted = Color(0xFF64748B);
 
-  // Accent Colors
-  static const Color accentBlue = Color(0xFF38BDF8); // Electric Blue
-  static const Color accentGreen = Color(0xFF10B981); // Emerald Green
-  static const Color primary = accentBlue;
+  // High-Fidelity Accent Colors (from requested design)
+  static const Color neonPink = Color(0xFFFE53BB);
+  static const Color electricBlue = Color(0xFF08F7FE);
+  static const Color royalPurple = Color(0xFF6C5CE7);
+  static const Color emeraldGreen = Color(0xFF10B981);
+
+  static const Color primary = royalPurple;
 
   /// Dynamically generates a production-ready theme based on mode and accent.
   static ThemeData buildTheme({

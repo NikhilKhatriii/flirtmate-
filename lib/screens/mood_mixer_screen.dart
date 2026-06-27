@@ -75,7 +75,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                   width: 28, height: 28,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppTheme.accentGreen, AppTheme.accentBlue],
+                      colors: [AppTheme.emeraldGreen, AppTheme.electricBlue],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -166,7 +166,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
               decoration: BoxDecoration(
                 gradient: readyToMix
                     ? const LinearGradient(
-                  colors: [AppTheme.accentGreen, AppTheme.accentBlue],
+                  colors: [AppTheme.emeraldGreen, AppTheme.electricBlue],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
@@ -180,7 +180,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 boxShadow: readyToMix
                     ? [
                   BoxShadow(
-                    color: AppTheme.accentBlue.withValues(alpha: 0.30),
+                    color: AppTheme.electricBlue.withValues(alpha: 0.30),
                     blurRadius: 18,
                     offset: const Offset(0, 6),
                   ),
