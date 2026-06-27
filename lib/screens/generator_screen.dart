@@ -404,13 +404,9 @@ class _MessageDisplayCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          const Positioned(
-            top: 24, left: 24,
-            child: Icon(CupertinoIcons.quote_bubble, size: 60, color: Colors.white10),
-          ),
           Center(
             child: Padding(
-              padding: const EdgeInsets.all(40),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: _buildContent(context),
             ),
           ),
@@ -444,13 +440,15 @@ class _MessageDisplayCard extends StatelessWidget {
         provider.currentMessage,
         key: ValueKey(provider.currentMessage),
         style: GoogleFonts.cormorantGaramond(
-          fontSize: 34,
+          fontSize: 26,
           color: Colors.white,
-          height: 1.4,
+          height: 1.3,
           fontWeight: FontWeight.w500,
           fontStyle: FontStyle.italic,
         ),
         textAlign: TextAlign.center,
+        maxLines: 6,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

@@ -63,18 +63,20 @@ def generate():
     
     # Constructing prompt
     prompt_lines = [
-        f'Generate exactly ONE sophisticated, high-class flirty pickup line or message for the "{category_name}" style.',
-        f'The response MUST be written in {target_language}.',
-        f'Style description: {style_hint}' if style_hint else '',
-        f'Tagline: "{tagline}"' if tagline else '',
-        f'Situation: {vibe_hint}' if vibe_hint else '',
+        f'You are an elite, high-status communication expert specialized in social chemistry. Generate exactly ONE premium, sophisticated line for the "{category_name}" style.',
+        f'Target audience: A high-value, intelligent individual who appreciates wit and understated confidence.',
+        f'The line MUST be written in {target_language}.',
+        f'Style context: {style_hint}' if style_hint else '',
+        f'Category essence: "{tagline}"' if tagline else '',
+        f'Specific dynamic: {vibe_hint}' if vibe_hint else '',
         '',
-        'Rules:',
-        f'- Output ONLY the line itself in {target_language} — no quotes, no labels, no explanation, no English translation',
-        '- Make it feel genuinely crafted and unique — not generic or clichéd',
-        '- High-class language: witty, charming, intelligent',
-        '- Length: 1 to 3 sentences maximum',
-        '- Never sound desperate or cheap'
+        'Strict Quality Guidelines:',
+        '- REGISTER: Use a "quiet luxury" register—sophisticated, polished, and impactful.',
+        '- NO CLICHÉS: Absolutely no generic pickup lines, puns, or overused tropes.',
+        '- TONE: Emotionally warm but intellectually sharp. Never sound desperate, thirsty, or "trying too hard."',
+        '- FORMAT: Output ONLY the raw line. No quotation marks, no explanations, no labels.',
+        '- LENGTH: Single, impactful sentence preferred. Maximum two sentences.',
+        '- DEPTH: Make it feel like a genuine observation or a spark of real curiosity.'
     ]
     
     if avoid_list:
@@ -99,9 +101,10 @@ def generate():
             {
                 "role": "system",
                 "content": (
-                    "You are a master of sophisticated, high-class romantic wit. "
-                    "You craft original, charming pickup lines with elegance and "
-                    "creativity. You respond with only the requested line — nothing else."
+                    "You are a master of 'quiet luxury' communication and high-status social wit. "
+                    "Your writing is reminiscent of premium fashion editorial or high-end literature. "
+                    "You excel at crafting original, intellectually sharp, and emotionally resonant social sparks. "
+                    "You never use clichés. You respond with only the raw text of the line requested."
                 )
             },
             {
@@ -109,7 +112,7 @@ def generate():
                 "content": prompt
             }
         ],
-        "temperature": 0.95,
+        "temperature": 0.85,
         "max_tokens": 150
     }
     
