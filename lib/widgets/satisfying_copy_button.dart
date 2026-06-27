@@ -62,9 +62,7 @@ class _SatisfyingCopyButtonState extends State<SatisfyingCopyButton> {
         height: widget.height,
         padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          gradient: _isCopied
-              ? const LinearGradient(colors: [AppTheme.emeraldGreen, Color(0xFF10B981)])
-              : LinearGradient(colors: [Theme.of(context).primaryColor, AppTheme.royalPurple]),
+          color: _isCopied ? AppTheme.emeraldGreen : Theme.of(context).primaryColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: _isCopied
               ? [
@@ -84,44 +82,39 @@ class _SatisfyingCopyButtonState extends State<SatisfyingCopyButton> {
                   )
                 ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
-              child: _isCopied
-                  ? const Icon(
-                      LucideIcons.check,
-                      key: ValueKey("check"),
-                      color: Colors.white,
-                      size: 18,
-                    )
-                  : const Icon(
-                      LucideIcons.copy,
-                      key: ValueKey("copy"),
-                      color: Colors.white,
-                      size: 16,
-                    ),
-            ),
-            const SizedBox(width: 8),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
-              child: Text(
-                _isCopied ? widget.copiedLabel : widget.label,
-                key: ValueKey(_isCopied),
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
+        child: Builder(builder: (ctx) {
+          final bgColor = _isCopied ? AppTheme.emeraldGreen : Theme.of(context).primaryColor;
+          final bool isLight = bgColor.computeLuminance() > 0.4;
+          final Color onColor = isLight ? const Color(0xFF09090B) : Colors.white;
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                child: _isCopied
+                    ? Icon(LucideIcons.check, key: const ValueKey("check"), color: onColor, size: 18)
+                    : Icon(LucideIcons.copy, key: const ValueKey("copy"), color: onColor, size: 16),
+              ),
+              const SizedBox(width: 8),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+                child: Text(
+                  _isCopied ? widget.copiedLabel : widget.label,
+                  key: ValueKey(_isCopied),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: onColor,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
       ),
     ).animate(target: _isCopied ? 1 : 0).scaleXY(end: 0.96, duration: 100.ms).then().scaleXY(end: 1.0, duration: 150.ms);
   }

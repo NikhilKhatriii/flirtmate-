@@ -5,24 +5,24 @@ class AppTheme {
   // ---------------------------------------------------------------------------
   // Luxury Startup Design Tokens ($50M Aesthetic)
   // ---------------------------------------------------------------------------
-  static const Color background = Color(0xFF020617); // Slate 950 (Modern Deep)
-  static const Color surface = Color(0xFF0F172A);
-  static const Color surfaceLight = Color(0xFF1E293B);
+  static const Color background = Color(0xFF09090B); // Zinc 950 (Modern Zinc Dark)
+  static const Color surface = Color(0xFF18181B); // Zinc 900
+  static const Color surfaceLight = Color(0xFF27272A); // Zinc 800
   static const Color cardBorder = Color(0xFFFFFFFF); // Used with low opacity
 
   static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color textMuted = Color(0xFF64748B);
+  static const Color textSecondary = Color(0xFFA1A1AA); // Zinc 400
+  static const Color textMuted = Color(0xFF71717A); // Zinc 500
 
-  // High-Fidelity Accent Colors
-  static const Color neonPink = Color(0xFFFE53BB);
-  static const Color electricBlue = Color(0xFF08F7FE);
-  static const Color royalPurple = Color(0xFF6C5CE7);
+  // Grayscale Luxury Aesthetic Colors
+  static const Color neonPink = Colors.white;
+  static const Color electricBlue = Color(0xFFE4E4E7); // Zinc 200
+  static const Color royalPurple = Color(0xFF27272A); // Zinc 800
   static const Color emeraldGreen = Color(0xFF10B981);
-  static const Color champagneGold = Color(0xFFE5C07B);
+  static const Color champagneGold = Color(0xFFA1A1AA);
 
-  static const Color primary = royalPurple;
-  static const Color accentBlue = electricBlue; // Fix for $50M Startup aesthetics
+  static const Color primary = Colors.white;
+  static const Color accentBlue = Color(0xFFD4D4D8); // Zinc 300
 
   /// Dynamic Glassmorphism Decoration
   static BoxDecoration glassDecoration({

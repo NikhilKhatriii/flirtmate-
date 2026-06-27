@@ -41,42 +41,40 @@ class _AnimatedGradientButtonState extends State<AnimatedGradientButton> with Si
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            gradient: LinearGradient(
-              colors: [
-                AppTheme.neonPink,
-                AppTheme.royalPurple,
-                Theme.of(context).primaryColor,
-                AppTheme.neonPink,
-              ],
-              begin: Alignment(-2.0 + (_controller.value * 2.0), -1.0),
-              end: Alignment(1.0 + (_controller.value * 2.0), 1.0),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.neonPink.withValues(alpha: 0.25),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
+    final primaryColor = Theme.of(context).primaryColor;
+    final bool isLight = primaryColor.computeLuminance() > 0.4;
+    final Color onPrimary = isLight ? const Color(0xFF09090B) : Colors.white;
+
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: primaryColor,
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        border: isLight ? null : Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withValues(alpha: isLight ? 0.2 : 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(widget.borderRadius),
-              onTap: widget.onTap,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          onTap: widget.onTap,
+          // Propagate contrast color via DefaultTextStyle and IconTheme
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: onPrimary),
+            child: IconTheme(
+              data: IconThemeData(color: onPrimary),
               child: Center(child: widget.child),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

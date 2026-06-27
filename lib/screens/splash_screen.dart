@@ -21,17 +21,14 @@ class _SplashScreenState extends State<SplashScreen> {
     {
       "value": "AI REPLIES",
       "label": "GENERATED IN SECONDS",
-      "icon": "⚡"
     },
     {
       "value": "CRAFTED NATURAL",
       "label": "NOT ROBOTIC OR CLICHÉD",
-      "icon": "🧠"
     },
     {
       "value": "SMART CONTEXT",
       "label": "FOR HIGH-STAKES CHEMISTRY",
-      "icon": "🔥"
     }
   ];
 
@@ -131,8 +128,6 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(slide['icon']!, style: const TextStyle(fontSize: 14)),
-            const SizedBox(width: 8),
             Text(
               "${slide['value']} ",
               style: GoogleFonts.inter(
@@ -194,6 +189,7 @@ class _AdvancedFluidLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -204,7 +200,7 @@ class _AdvancedFluidLogo extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.neonPink.withValues(alpha: 0.1),
+                color: primaryColor.withValues(alpha: 0.1),
                 blurRadius: 80, spreadRadius: 15,
               ),
             ],
@@ -215,7 +211,7 @@ class _AdvancedFluidLogo extends StatelessWidget {
         SizedBox(
           width: 110, height: 125,
           child: CustomPaint(
-            painter: _LogoVectorPainter(),
+            painter: _LogoVectorPainter(primaryColor),
           ),
         ).animate(onPlay: (c) => c.repeat(reverse: true))
          .shimmer(duration: 4.seconds, color: Colors.white.withValues(alpha: 0.15))
@@ -226,15 +222,13 @@ class _AdvancedFluidLogo extends StatelessWidget {
 }
 
 class _LogoVectorPainter extends CustomPainter {
+  final Color primaryColor;
+  _LogoVectorPainter(this.primaryColor);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topRight,
-        end: Alignment.bottomLeft,
-        colors: [AppTheme.neonPink, AppTheme.royalPurple, AppTheme.electricBlue],
-        stops: [0.1, 0.5, 0.9],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..color = primaryColor
       ..style = PaintingStyle.fill;
 
     final path1 = Path();
@@ -258,7 +252,7 @@ class _LogoVectorPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
     canvas.drawPath(path1, glossPaint);
   }
-  @override bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  @override bool shouldRepaint(covariant _LogoVectorPainter oldDelegate) => oldDelegate.primaryColor != primaryColor;
 }
 
 class _BrandTitleSection extends StatelessWidget {
@@ -389,6 +383,12 @@ class _StartupGetStartedButtonState extends State<_StartupGetStartedButton> with
 
   @override
   Widget build(BuildContext context) {
+    final accent = Theme.of(context).primaryColor;
+    // Compute text/icon color for contrast: dark text on light accent, white on dark accent
+    final bool isLight = accent.computeLuminance() > 0.4;
+    final Color onAccent = isLight ? const Color(0xFF09090B) : Colors.white;
+    final Color glowColor = isLight ? accent.withValues(alpha: 0.2) : accent.withValues(alpha: 0.3);
+
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
       onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
@@ -400,13 +400,14 @@ class _StartupGetStartedButtonState extends State<_StartupGetStartedButton> with
           height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(40),
-            gradient: const LinearGradient(
-              colors: [AppTheme.neonPink, AppTheme.royalPurple, AppTheme.electricBlue],
-              stops: [0.1, 0.5, 0.9],
-            ),
+            color: accent,
+            border: isLight ? null : Border.all(color: Colors.white.withValues(alpha: 0.15), width: 1),
             boxShadow: [
-              BoxShadow(color: AppTheme.neonPink.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(-8, 0)),
-              BoxShadow(color: AppTheme.electricBlue.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(8, 0)),
+              BoxShadow(
+                color: glowColor,
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Row(
@@ -417,12 +418,12 @@ class _StartupGetStartedButtonState extends State<_StartupGetStartedButton> with
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                  color: onAccent,
                   letterSpacing: 1.0,
                 ),
               ),
               const SizedBox(width: 14),
-              const Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 24),
+              Icon(CupertinoIcons.arrow_right, color: onAccent, size: 22),
             ],
           ),
         ),

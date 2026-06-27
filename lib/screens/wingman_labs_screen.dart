@@ -8,6 +8,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/flirt_provider.dart';
 import '../theme/app_theme.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_gradient_button.dart';
 import '../widgets/satisfying_copy_button.dart';
@@ -29,6 +32,7 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
   bool _isScanning = false;
   bool _scanComplete = false;
   String _selectedPlatform = 'WhatsApp';
+  Uint8List? _selectedImageBytes;
 
   // Waveform animation control
   late AnimationController _waveformController;
@@ -178,7 +182,7 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [AppTheme.neonPink, AppTheme.royalPurple]),
+                  color: Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -255,7 +259,7 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
 
           // Upload Container / Scanner
           GestureDetector(
-            onTap: _isScanning ? null : () => _simulateScan(provider),
+            onTap: _isScanning ? null : () => _pickAndAnalyzeScreenshot(provider),
             child: AspectRatio(
               aspectRatio: 1.7,
               child: GlassCard(
@@ -264,6 +268,21 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
+                    // Real picked image preview in background
+                    if (_selectedImageBytes != null)
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Opacity(
+                            opacity: 0.25,
+                            child: Image.memory(
+                              _selectedImageBytes!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                    
                     if (!_isScanning && !_scanComplete) ...[
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -283,7 +302,7 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
                             style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
                           ),
                           const SizedBox(height: 4),
-                          Text("Tap to simulate instant vision analysis", style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted)),
+                          Text("Tap to select image from gallery", style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted)),
                         ],
                       ),
                     ],
@@ -311,7 +330,7 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
                       ),
                     ],
                     if (_scanComplete && provider.screenshotAnalysis != null) ...[
-                      Row(
+                      Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(LucideIcons.checkCircle, color: AppTheme.emeraldGreen, size: 28),
@@ -320,6 +339,8 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
                             "ANALYSIS COMPLETE ($_selectedPlatform)",
                             style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0),
                           ),
+                          const SizedBox(height: 4),
+                          Text("Tap gallery button to upload a new one", style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMuted)),
                         ],
                       ),
                     ],
@@ -338,23 +359,41 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
     );
   }
 
-  void _simulateScan(FlirtProvider provider) async {
-    HapticFeedback.heavyImpact();
-    setState(() {
-      _isScanning = true;
-      _scanComplete = false;
-    });
+  void _pickAndAnalyzeScreenshot(FlirtProvider provider) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image == null) return;
 
-    // Simulate short network vision upload delay
-    await Future.delayed(const Duration(milliseconds: 2000));
-    await provider.runScreenshotAnalysis("dummy_base64_chat_data", platform: _selectedPlatform);
-
-    if (mounted) {
-      HapticFeedback.mediumImpact();
+      HapticFeedback.heavyImpact();
+      final bytes = await image.readAsBytes();
+      
       setState(() {
-        _isScanning = false;
-        _scanComplete = true;
+        _isScanning = true;
+        _scanComplete = false;
+        _selectedImageBytes = bytes;
       });
+
+      final base64Image = base64Encode(bytes);
+      await provider.runScreenshotAnalysis(base64Image, platform: _selectedPlatform);
+
+      if (mounted) {
+        HapticFeedback.mediumImpact();
+        setState(() {
+          _isScanning = false;
+          _scanComplete = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isScanning = false;
+          _scanComplete = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to pick image: $e")),
+        );
+      }
     }
   }
 
@@ -533,9 +572,9 @@ class _WingmanLabsScreenState extends State<WingmanLabsScreen> with TickerProvid
             padding: const EdgeInsets.all(16),
             width: double.infinity,
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [AppTheme.royalPurple.withValues(alpha: 0.2), AppTheme.electricBlue.withValues(alpha: 0.1)]),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.electricBlue.withValues(alpha: 0.3)),
+              border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
             ),
             child: Text(
               replyText,

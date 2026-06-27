@@ -9,11 +9,12 @@ import '../models/flirt_category.dart';
 import '../providers/flirt_provider.dart';
 import '../providers/language_provider.dart';
 import '../widgets/settings_sheet.dart';
-import '../widgets/animated_gradient_button.dart';
+
 import '../widgets/glass_card.dart';
 import '../theme/app_theme.dart';
 import 'mood_mixer_screen.dart';
 import 'generator_screen.dart';
+
 import '../services/analytics_service.dart';
 import '../data/arc_lines.dart';
 
@@ -48,7 +49,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(lp),
-                  _buildQuickGenerateButton(context, provider, lp),
                   _buildDailyInsight(lp),
                   _buildMoodMixer(context, lp),
                   _buildCategoryGrid(),
@@ -162,13 +162,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
           HapticFeedback.mediumImpact();
           Navigator.push(context, MaterialPageRoute(builder: (_) => const MoodMixerScreen()));
         },
-        child: GlassCard(
-          borderRadius: 24,
-          opacity: 0.04,
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFA1A1AA), // Solid light/medium grey
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Row(
             children: [
-              const Icon(LucideIcons.sliders, color: AppTheme.electricBlue, size: 22),
+              const Icon(LucideIcons.sliders, color: Colors.black87, size: 22),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -176,17 +178,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   children: [
                     Text(
                       lp.translate('mood_mixer'),
-                      style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white),
+                      style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.black),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       "Blend styles for a custom signature",
-                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                      style: GoogleFonts.inter(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
               ),
-              const Icon(LucideIcons.chevronRight, color: Colors.white24, size: 18),
+              const Icon(LucideIcons.chevronRight, color: Colors.black38, size: 18),
             ],
           ),
         ),
@@ -210,40 +212,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  Widget _buildQuickGenerateButton(BuildContext context, FlirtProvider provider, LanguageProvider lp) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: AnimatedGradientButton(
-        height: 52,
-        onTap: () {
-          HapticFeedback.mediumImpact();
-          if (provider.selectedCategory == null) {
-            provider.selectCategory(kCategories.first);
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const GeneratorScreen()),
-          );
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(LucideIcons.sparkles, color: Colors.white, size: 18),
-            const SizedBox(width: 10),
-            Text(
-              "GENERATE AI LINE",
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _CategoryCard extends StatefulWidget {
@@ -296,7 +264,7 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: widget.category.gradientColors),
+                        color: Colors.white.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(widget.category.icon, color: Colors.white, size: 20),
@@ -330,7 +298,7 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
                       provider.selectCategory(widget.category);
                       provider.setArcStage(stage);
                       Navigator.pop(ctx);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const GeneratorScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => GeneratorScreen()));
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
@@ -405,9 +373,8 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
               Container(
                 width: 44, height: 44,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: widget.category.gradientColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  color: Colors.white.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: widget.category.gradientColors.first.withValues(alpha: 0.2), blurRadius: 12, offset: const Offset(0, 4))],
                 ),
                 child: Icon(widget.category.icon, color: Colors.white, size: 20),
               ),

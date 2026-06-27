@@ -142,15 +142,26 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> getDailyFeed() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/daily'),
-    ).timeout(const Duration(seconds: 20));
+    final fallback = {
+      "icebreaker": "Would you rather have a conversation consisting entirely of movie quotes or song lyrics?",
+      "tip": "Ask 'why' rather than 'what'. It invites stories instead of listings, keeping the dialogue rich.",
+      "challenge": "Compliment someone today without mentioning their physical appearance.",
+      "line": "I'm starting to think your smile should come with a warning—it keeps distracting me.",
+      "compliment": "You have a voice that sounds like a quiet Sunday afternoon."
+    };
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return Map<String, dynamic>.from(data['data'] ?? {});
-    }
-    throw Exception(_describeError(response.statusCode, response.body));
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/daily'),
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final resMap = Map<String, dynamic>.from(data['data'] ?? {});
+        if (resMap.isNotEmpty) return resMap;
+      }
+    } catch (_) {}
+    return fallback;
   }
 
   static Future<bool> submitFeedback({
