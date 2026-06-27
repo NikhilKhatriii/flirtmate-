@@ -116,8 +116,8 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                         color: AppTheme.primary, size: 18),
                   ),
                   const SizedBox(width: 10),
-                  Text('Make it personal', style: GoogleFonts.inter(
-                      fontSize: 19, fontWeight: FontWeight.w700,
+                  Text('Make it personal', style: GoogleFonts.cormorantGaramond(
+                      fontSize: 26, fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary)),
                 ]),
                 const SizedBox(height: 6),
@@ -209,12 +209,13 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                     child: OutlinedButton(
                       onPressed: _clear,
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
                         side: const BorderSide(color: AppTheme.cardBorder),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text('Clear', style: GoogleFonts.inter(
+                          fontSize: 13,
                           color: AppTheme.textSecondary, fontWeight: FontWeight.w700)),
                     ),
                   ),
@@ -225,12 +226,13 @@ class _PersonalizeSheetState extends State<_PersonalizeSheet> {
                       onPressed: _save,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
                       child: Text('Save & Generate', style: GoogleFonts.inter(
+                          fontSize: 13,
                           color: Colors.white, fontWeight: FontWeight.w700)),
                     ),
                   ),

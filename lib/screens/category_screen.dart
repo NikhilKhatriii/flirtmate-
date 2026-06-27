@@ -39,8 +39,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
             child: Row(children: [
-              Text(lp.translate('app_name'),
-                style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary),
+              // Brand Branding Header
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [Colors.white, Color(0xFF38BDF8)],
+                ).createShader(bounds),
+                child: Text("FlirtMate",
+                  style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -1),
+                ),
               ),
               const Spacer(),
               _ActionIcon(icon: CupertinoIcons.globe, onTap: () => showLanguageSelector(context)),
@@ -62,7 +68,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
               const SizedBox(height: 2),
               Text(lp.translate('flirt_style'),
-                style: GoogleFonts.playfairDisplay(fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                style: GoogleFonts.cormorantGaramond(fontSize: 48, fontWeight: FontWeight.w800, letterSpacing: -0.5, height: 1.1),
               ),
               const SizedBox(height: 5),
               Text(lp.translate('tagline'),
@@ -78,21 +84,29 @@ class _CategoryScreenState extends State<CategoryScreen> {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoodMixerScreen())),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.primary]),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
                 ),
                 child: Row(children: [
-                  const Icon(CupertinoIcons.slider_horizontal_3, color: Colors.black, size: 20),
-                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(CupertinoIcons.slider_horizontal_3, color: Theme.of(context).colorScheme.primary, size: 18),
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(lp.translate('mood_mixer'), style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black)),
-                      Text(lp.translate('mood_mixer_desc'), style: GoogleFonts.inter(fontSize: 11, color: Colors.black54)),
+                      Text(lp.translate('mood_mixer'), style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                      Text(lp.translate('mood_mixer_desc'), style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
                     ]),
                   ),
-                  const Icon(CupertinoIcons.chevron_right, color: Colors.black45, size: 16),
+                  const Icon(CupertinoIcons.chevron_right, color: Colors.white24, size: 16),
                 ]),
               ),
             ),
@@ -160,35 +174,48 @@ class _CategoryCardState extends State<_CategoryCard> with SingleTickerProviderS
         onTapCancel: () => _ctrl.reverse(),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF14171C), 
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: accent.withValues(alpha: 0.15), width: 1), 
+            color: const Color(0xFF1E293B).withValues(alpha: 0.4), // Glass effect
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1), 
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                  child: Icon(widget.category.icon, color: accent, size: 20),
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: widget.category.gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: widget.category.gradientColors.first.withValues(alpha: 0.3),
+                        blurRadius: 12, offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Icon(widget.category.icon, color: Colors.white, size: 22),
                 ),
                 const Spacer(),
                 Text(lp.translate(widget.category.id),
-                  style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+                  style: GoogleFonts.cormorantGaramond(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white, height: 1.1),
                   maxLines: 1, overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(lp.translate('${widget.category.id}_desc'),
-                  style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF8E95A0), height: 1.3),
+                  style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF94A3B8), height: 1.4),
                   maxLines: 2, overflow: TextOverflow.ellipsis,
                 ),
               ],

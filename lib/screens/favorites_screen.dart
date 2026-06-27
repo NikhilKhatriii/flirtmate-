@@ -53,8 +53,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               ),
               Text(
                 'Favorites',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 22,
+                style: GoogleFonts.cormorantGaramond(
+                  fontSize: 26,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
                   letterSpacing: -0.4,

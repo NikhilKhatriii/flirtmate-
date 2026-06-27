@@ -101,7 +101,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 onPressed: () => Navigator.pop(context),
                 child: const Icon(
                   CupertinoIcons.chevron_left,
-                  color: AppTheme.primaryPlatinum, // Using preset for consistency
+                  color: AppTheme.textPrimary, // Using preset for consistency
                   size: 20,
                 ),
               ),
@@ -111,8 +111,8 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 const SizedBox(width: 6),
                 Text(
                   lp.translate(cat.id),
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 18,
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
                     letterSpacing: -0.2,
@@ -339,7 +339,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
           // History navigation
           if (provider.historyCount > 0)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: Row(children: [
                 _NavBtn(
                   icon: CupertinoIcons.chevron_left,
@@ -347,15 +347,22 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                   onTap: () => provider.navigateHistory(-1),
                 ),
                 const Spacer(),
-                Text(
-                  provider.state == GeneratorState.loading
-                      ? lp.translate('generating').toUpperCase()
-                      : '#${provider.historyIndex + 1} OF ${provider.historyCount}',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: AppTheme.textMuted,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    provider.state == GeneratorState.loading
+                        ? lp.translate('generating').toUpperCase()
+                        : '${provider.historyIndex + 1} / ${provider.historyCount}',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                      color: AppTheme.textMuted,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -393,7 +400,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
 
           // Action buttons — row 1
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
             child: Row(children: [
               _ActionBtn(
                 icon: CupertinoIcons.sparkles,
@@ -405,7 +412,7 @@ class _GeneratorScreenState extends State<GeneratorScreen>
                 isPrimary: true,
                 onTap: _animateAndGenerate,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               _ActionBtn(
                 icon: provider.isFavorited(provider.currentMessage)
                     ? CupertinoIcons.heart_fill
@@ -631,10 +638,10 @@ class _MessageCard extends StatelessWidget {
           child: Text(
             provider.currentMessage,
             key: ValueKey(provider.currentMessage),
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 20,
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 34,
               color: AppTheme.textPrimary,
-              height: 1.6,
+              height: 1.4,
               fontWeight: FontWeight.w500,
               fontStyle: FontStyle.italic,
             ),
@@ -720,13 +727,13 @@ class _ActionBtn extends StatelessWidget {
           opacity: enabled ? 1.0 : 0.35,
           duration: const Duration(milliseconds: 200),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               gradient: isPrimary && gradient != null
                   ? LinearGradient(colors: gradient!)
                   : null,
               color: isPrimary ? null : AppTheme.surface,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isPrimary ? Colors.transparent : AppTheme.cardBorder,
                 width: 0.5,

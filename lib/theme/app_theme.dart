@@ -3,25 +3,21 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ---------------------------------------------------------------------------
-  // Production-Grade Design Tokens (Base)
+  // Professional Enterprise Design Tokens
   // ---------------------------------------------------------------------------
-  static const Color background = Color(0xFF0B0C0E);
-  static const Color surface = Color(0xFF14171C);
-  static const Color surfaceLight = Color(0xFF1F2229);
-  static const Color cardBorder = Color(0xFF2C3039);
+  static const Color background = Color(0xFF0F172A); // Deep Navy
+  static const Color surface = Color(0xFF1E293B);
+  static const Color surfaceLight = Color(0xFF334155);
+  static const Color cardBorder = Color(0xFF475569);
 
-  static const Color textPrimary = Color(0xFFE2E5E9);
-  static const Color textSecondary = Color(0xFF8E95A0);
-  static const Color textMuted = Color(0xFF636971);
+  static const Color textPrimary = Colors.white;
+  static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color textMuted = Color(0xFF64748B);
 
-  // Default Accents (Presets)
-  static const Color primaryPlatinum = Color(0xFFE2E5E9);
-  static const Color primaryChampagne = Color(0xFFE5C07B);
-  static const Color primaryTeal = Color(0xFF00E5FF);
-
-  // Constants for usage in const constructors
-  static const Color primary = primaryPlatinum;
-  static const Color primaryDark = Color(0xFFB0B3B8);
+  // Accent Colors
+  static const Color accentBlue = Color(0xFF38BDF8); // Electric Blue
+  static const Color accentGreen = Color(0xFF10B981); // Emerald Green
+  static const Color primary = accentBlue;
 
   /// Dynamically generates a production-ready theme based on mode and accent.
   static ThemeData buildTheme({
@@ -54,12 +50,15 @@ class AppTheme {
       ),
 
       textTheme: TextTheme(
-        displayLarge: GoogleFonts.playfairDisplay(color: effectiveTextPrimary, fontWeight: FontWeight.w800),
-        displayMedium: GoogleFonts.playfairDisplay(color: effectiveTextPrimary, fontWeight: FontWeight.w700),
-        titleLarge: GoogleFonts.inter(color: effectiveTextPrimary, fontWeight: FontWeight.w600),
-        bodyLarge: GoogleFonts.inter(color: effectiveTextPrimary),
-        bodyMedium: GoogleFonts.inter(color: effectiveTextPrimary),
-        bodySmall: GoogleFonts.inter(color: effectiveTextSecondary),
+        displayLarge: GoogleFonts.cormorantGaramond(color: effectiveTextPrimary, fontWeight: FontWeight.w700, fontSize: 52, height: 1.1),
+        displayMedium: GoogleFonts.cormorantGaramond(color: effectiveTextPrimary, fontWeight: FontWeight.w700, fontSize: 40, height: 1.2),
+        displaySmall: GoogleFonts.cormorantGaramond(color: effectiveTextPrimary, fontWeight: FontWeight.w600, fontSize: 32),
+        headlineMedium: GoogleFonts.cormorantGaramond(color: effectiveTextPrimary, fontWeight: FontWeight.w600, fontSize: 28),
+        titleLarge: GoogleFonts.cormorantGaramond(color: effectiveTextPrimary, fontWeight: FontWeight.w600, fontSize: 24),
+        bodyLarge: GoogleFonts.inter(color: effectiveTextPrimary, fontSize: 17, height: 1.6, letterSpacing: 0.2),
+        bodyMedium: GoogleFonts.inter(color: effectiveTextPrimary, fontSize: 15, height: 1.5),
+        bodySmall: GoogleFonts.inter(color: effectiveTextSecondary, fontSize: 14),
+        labelLarge: GoogleFonts.inter(color: effectiveTextPrimary, fontWeight: FontWeight.w600, fontSize: 16, letterSpacing: 0.5),
       ),
 
       appBarTheme: AppBarTheme(

@@ -50,7 +50,7 @@ class _LanguageSelectorSheet extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text('App Language',
-              style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+              style: GoogleFonts.cormorantGaramond(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
           const SizedBox(height: 8),
           const Text('Select your preferred interface language.', style: TextStyle(color: Color(0xFF8E95A0), fontSize: 13)),
           const SizedBox(height: 24),
@@ -72,10 +72,10 @@ class _LanguageSelectorSheet extends StatelessWidget {
                     },
                     borderRadius: BorderRadius.circular(14),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.white.withValues(alpha: 0.03) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected ? const Color(0xFFE2E5E9) : Colors.white.withValues(alpha: 0.05),
                           width: isSelected ? 1.5 : 1,

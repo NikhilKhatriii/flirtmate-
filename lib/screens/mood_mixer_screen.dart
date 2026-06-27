@@ -66,7 +66,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: const Icon(
                   CupertinoIcons.chevron_left,
-                  color: AppTheme.primaryPlatinum,
+                  color: AppTheme.textPrimary,
                   size: 20,
                 ),
               ),
@@ -75,7 +75,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                   width: 28, height: 28,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
+                      colors: [AppTheme.accentGreen, AppTheme.accentBlue],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -90,8 +90,8 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 const SizedBox(width: 10),
                 Text(
                   lp.translate('mood_mixer'),
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 21,
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
                     letterSpacing: -0.2,
@@ -166,7 +166,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
               decoration: BoxDecoration(
                 gradient: readyToMix
                     ? const LinearGradient(
-                  colors: [AppTheme.primaryDark, AppTheme.primaryPlatinum],
+                  colors: [AppTheme.accentGreen, AppTheme.accentBlue],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
@@ -180,7 +180,7 @@ class _MoodMixerScreenState extends State<MoodMixerScreen> {
                 boxShadow: readyToMix
                     ? [
                   BoxShadow(
-                    color: AppTheme.primaryDark.withValues(alpha: 0.30),
+                    color: AppTheme.accentBlue.withValues(alpha: 0.30),
                     blurRadius: 18,
                     offset: const Offset(0, 6),
                   ),
@@ -326,8 +326,8 @@ class _MixCardState extends State<_MixCard> with SingleTickerProviderStateMixin 
                 children: [
                   Text(
                     lp.translate(widget.category.id),
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 14,
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
                     ),
