@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'dart:ui';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../services/analytics_service.dart';
-import 'category_screen.dart';
+import 'dashboard_screen.dart';
+import '../widgets/glass_card.dart';
 
-/// A high-fidelity onboarding screen matching the premium visual design.
-/// Optimized for Impeller rendering with proper layer management.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
   @override
@@ -16,10 +16,40 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  int _currentSlide = 0;
+  final List<Map<String, String>> _socialProofSlides = [
+    {
+      "value": "AI REPLIES",
+      "label": "GENERATED IN SECONDS",
+      "icon": "⚡"
+    },
+    {
+      "value": "CRAFTED NATURAL",
+      "label": "NOT ROBOTIC OR CLICHÉD",
+      "icon": "🧠"
+    },
+    {
+      "value": "SMART CONTEXT",
+      "label": "FOR HIGH-STAKES CHEMISTRY",
+      "icon": "🔥"
+    }
+  ];
+
   @override
   void initState() {
     super.initState();
     AnalyticsService.screenView('onboarding_screen');
+    _rotateSlides();
+  }
+
+  void _rotateSlides() async {
+    while (mounted) {
+      await Future.delayed(const Duration(seconds: 4));
+      if (!mounted) return;
+      setState(() {
+        _currentSlide = (_currentSlide + 1) % _socialProofSlides.length;
+      });
+    }
   }
 
   @override
@@ -28,45 +58,133 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: AppTheme.background,
       body: Stack(
         children: [
-          const _PremiumNebulaBackground(),
-          const _MainOnboardingContent(),
+          const _AnimatedNebulaBackground(),
+          
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            children: [
+                              const SizedBox(height: 8),
+                              const _AdvancedFluidLogo(),
+                              const SizedBox(height: 12),
+                              const _BrandTitleSection(),
+                              const SizedBox(height: 6),
+                              const _CorporateTagline(),
+                              const SizedBox(height: 16),
+                              
+                              // Social Proof Carousel Slide
+                              _buildSocialProofCarousel(),
+                              
+                              const SizedBox(height: 20),
+                              const _FeatureHighlightGrid(),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16, bottom: 8),
+                            child: _StartupGetStartedButton(
+                              onTap: () {
+                                HapticFeedback.heavyImpact();
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSocialProofCarousel() {
+    final slide = _socialProofSlides[_currentSlide];
+    return AnimatedSwitcher(
+      duration: 500.ms,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation), child: child),
+        );
+      },
+      child: GlassCard(
+        key: ValueKey(_currentSlide),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        borderRadius: 50,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(slide['icon']!, style: const TextStyle(fontSize: 14)),
+            const SizedBox(width: 8),
+            Text(
+              "${slide['value']} ",
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                color: AppTheme.electricBlue,
+                letterSpacing: 0.5,
+              ),
+            ),
+            Text(
+              slide['label']!,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textSecondary,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _MainOnboardingContent extends StatelessWidget {
-  const _MainOnboardingContent();
+class _CorporateTagline extends StatelessWidget {
+  const _CorporateTagline();
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          children: [
-            const Spacer(flex: 2),
-            const _AdvancedFluidLogo(),
-            const Spacer(flex: 1),
-            const _BrandTitleSection(),
-            const SizedBox(height: 12),
-            const _AIPoweredBadge(),
-            const SizedBox(height: 12),
-            const _TaglineText(),
-            const Spacer(flex: 2),
-            const _FeatureHighlightGrid(),
-            const Spacer(flex: 3),
-            _VibrantCTAButton(
-              onTap: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const CategoryScreen()),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
+    return Column(
+      children: [
+        Text(
+          "Say Less. Flirt Better.",
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+          ),
+        ).animate().fadeIn(delay: 400.ms),
+        const SizedBox(height: 4),
+        Text(
+          "Your premium AI wingman for high-stakes social chemistry.",
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: AppTheme.textSecondary,
+            fontWeight: FontWeight.w400,
+          ),
+          textAlign: TextAlign.center,
+        ).animate(delay: 500.ms).fadeIn(),
+      ],
     );
   }
 }
@@ -79,36 +197,31 @@ class _AdvancedFluidLogo extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // High-Intensity Focal Glow
+        // Pulsing background glow
         Container(
-          width: 180, height: 180,
+          width: 150, height: 150,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.royalPurple.withValues(alpha: 0.15),
-                blurRadius: 100, spreadRadius: 20,
+                color: AppTheme.neonPink.withValues(alpha: 0.1),
+                blurRadius: 80, spreadRadius: 15,
               ),
             ],
           ),
-        ),
-        // Stylized Fluid "F" Monogram
-        // Using a solid Opacity wrapper as a buffer for Impeller inherited opacity validation
-        Opacity(
-          opacity: 1.0,
-          child: RepaintBoundary(
-            child: SizedBox(
-              width: 120, height: 150,
-              child: CustomPaint(
-                painter: _LogoVectorPainter(),
-              ),
-            ),
+        ).animate(onPlay: (c) => c.repeat(reverse: true))
+         .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 3.seconds),
+        
+        SizedBox(
+          width: 110, height: 125,
+          child: CustomPaint(
+            painter: _LogoVectorPainter(),
           ),
         ).animate(onPlay: (c) => c.repeat(reverse: true))
          .shimmer(duration: 4.seconds, color: Colors.white.withValues(alpha: 0.15))
-         .moveY(begin: -5, end: 5, duration: 3.seconds, curve: Curves.easeInOutSine),
+         .moveY(begin: -4, end: 4, duration: 3.seconds, curve: Curves.easeInOutSine),
       ],
-    ).animate().fadeIn(duration: 1200.ms).scale(begin: const Offset(0.9, 0.9));
+    ).animate().fadeIn(duration: 1.seconds);
   }
 }
 
@@ -145,9 +258,7 @@ class _LogoVectorPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
     canvas.drawPath(path1, glossPaint);
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  @override bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _BrandTitleSection extends StatelessWidget {
@@ -165,7 +276,7 @@ class _BrandTitleSection extends StatelessWidget {
             Text("i", style: _titleStyle),
             Positioned(
               top: 6,
-              child: const Icon(CupertinoIcons.heart_fill, size: 12, color: AppTheme.neonPink)
+              child: const Icon(CupertinoIcons.heart_fill, size: 10, color: AppTheme.neonPink)
                 .animate(onPlay: (c) => c.repeat(reverse: true))
                 .scale(begin: const Offset(1, 1), end: const Offset(1.3, 1.3), duration: 800.ms),
             ),
@@ -177,53 +288,8 @@ class _BrandTitleSection extends StatelessWidget {
   }
 
   TextStyle get _titleStyle => GoogleFonts.inter(
-    fontSize: 44, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -1.5,
+    fontSize: 42, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -1.5,
   );
-}
-
-class _AIPoweredBadge extends StatelessWidget {
-  const _AIPoweredBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-        color: Colors.white.withValues(alpha: 0.05),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(CupertinoIcons.sparkles, size: 14, color: AppTheme.neonPink),
-          const SizedBox(width: 10),
-          Text(
-            '✦ AI-POWERED CHEMISTRY ✦',
-            style: GoogleFonts.inter(
-              fontSize: 12, color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(width: 10),
-          const Icon(CupertinoIcons.sparkles, size: 14, color: AppTheme.electricBlue),
-        ],
-      ),
-    );
-  }
-}
-
-class _TaglineText extends StatelessWidget {
-  const _TaglineText();
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      "Built for real connections.",
-      style: GoogleFonts.inter(
-        fontSize: 16, color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w400,
-      ),
-    ).animate(delay: 400.ms).fadeIn();
-  }
 }
 
 class _FeatureHighlightGrid extends StatelessWidget {
@@ -235,29 +301,26 @@ class _FeatureHighlightGrid extends StatelessWidget {
       children: [
         Expanded(
           child: _FeatureCard(
-            icon: CupertinoIcons.chat_bubble_text_fill,
-            title: "14 Detailed\nMoods",
-            subtitle: "Express how you feel with precision.",
-            accent: AppTheme.neonPink,
+            icon: LucideIcons.shieldAlert,
+            title: "Safe &\nRespected",
+            accent: AppTheme.emeraldGreen,
             delay: 0,
           ),
         ),
-        SizedBox(width: 12),
+        SizedBox(width: 10),
         Expanded(
           child: _FeatureCard(
-            icon: CupertinoIcons.infinite,
+            icon: LucideIcons.infinity,
             title: "Infinite\nLines",
-            subtitle: "Break the ice with limitless openers.",
             accent: AppTheme.royalPurple,
             delay: 150,
           ),
         ),
-        SizedBox(width: 12),
+        SizedBox(width: 10),
         Expanded(
           child: _FeatureCard(
-            icon: CupertinoIcons.sparkles,
+            icon: LucideIcons.sparkles,
             title: "Smart\nResponses",
-            subtitle: "AI-crafted replies that feel natural.",
             accent: AppTheme.electricBlue,
             delay: 300,
           ),
@@ -270,46 +333,32 @@ class _FeatureHighlightGrid extends StatelessWidget {
 class _FeatureCard extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
   final Color accent;
   final int delay;
 
   const _FeatureCard({
-    required this.icon, required this.title, required this.subtitle, required this.accent, required this.delay,
+    required this.icon, required this.title, required this.accent, required this.delay,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      height: 180,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      height: 120,
+      opacity: 0.04,
+      borderRadius: 20,
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha: 0.1)),
-            child: Icon(icon, size: 24, color: accent),
-          ),
+          Icon(icon, size: 24, color: accent),
           const Spacer(),
           Text(
             title,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white, height: 1.1),
           ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 9, color: Colors.white.withValues(alpha: 0.4), height: 1.3),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
-            width: 24, height: 3,
+            width: 20, height: 3,
             decoration: BoxDecoration(
               color: accent, borderRadius: BorderRadius.circular(10),
               boxShadow: [BoxShadow(color: accent.withValues(alpha: 0.5), blurRadius: 6)],
@@ -321,14 +370,14 @@ class _FeatureCard extends StatelessWidget {
   }
 }
 
-class _VibrantCTAButton extends StatefulWidget {
+class _StartupGetStartedButton extends StatefulWidget {
   final VoidCallback onTap;
-  const _VibrantCTAButton({required this.onTap});
+  const _StartupGetStartedButton({required this.onTap});
   @override
-  State<_VibrantCTAButton> createState() => _VibrantCTAButtonState();
+  State<_StartupGetStartedButton> createState() => _StartupGetStartedButtonState();
 }
 
-class _VibrantCTAButtonState extends State<_VibrantCTAButton> with SingleTickerProviderStateMixin {
+class _StartupGetStartedButtonState extends State<_StartupGetStartedButton> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   @override
   void initState() {
@@ -348,19 +397,30 @@ class _VibrantCTAButtonState extends State<_VibrantCTAButton> with SingleTickerP
         scale: Tween<double>(begin: 1.0, end: 0.96).animate(_ctrl),
         child: Container(
           width: double.infinity,
-          height: 68,
+          height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(40),
-            gradient: const LinearGradient(colors: [AppTheme.neonPink, AppTheme.royalPurple, AppTheme.electricBlue]),
+            gradient: const LinearGradient(
+              colors: [AppTheme.neonPink, AppTheme.royalPurple, AppTheme.electricBlue],
+              stops: [0.1, 0.5, 0.9],
+            ),
             boxShadow: [
-              BoxShadow(color: AppTheme.neonPink.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(-8, 0)),
-              BoxShadow(color: AppTheme.electricBlue.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(8, 0)),
+              BoxShadow(color: AppTheme.neonPink.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(-8, 0)),
+              BoxShadow(color: AppTheme.electricBlue.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(8, 0)),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Get Started', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+              Text(
+                'GET STARTED',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 1.0,
+                ),
+              ),
               const SizedBox(width: 14),
               const Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 24),
             ],
@@ -371,60 +431,37 @@ class _VibrantCTAButtonState extends State<_VibrantCTAButton> with SingleTickerP
   }
 }
 
-class _PremiumNebulaBackground extends StatelessWidget {
-  const _PremiumNebulaBackground();
+class _AnimatedNebulaBackground extends StatelessWidget {
+  const _AnimatedNebulaBackground();
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Container(color: Colors.black),
-        // Deep Purple Wash
-        Positioned(
-          top: 0, right: -100,
-          child: Container(
-            width: 500, height: 500,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppTheme.royalPurple.withValues(alpha: 0.06),
-            ),
-          ).animate(onPlay: (c) => c.repeat(reverse: true))
-           .blur(begin: const Offset(80, 80), end: const Offset(150, 150), duration: 8.seconds),
-        ),
-
-        // Animated Aurora Lines
-        RepaintBoundary(
-          child: CustomPaint(
-            size: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height),
-            painter: _NebulaPainter(),
-          ),
-        ).animate(onPlay: (c) => c.repeat(reverse: true))
-         .fade(begin: 0.3, end: 0.7, duration: 4.seconds),
+        _MovingGlow(color: AppTheme.neonPink.withValues(alpha: 0.08), size: 450, start: const Offset(-0.2, -0.2), end: const Offset(0.2, 0.1)),
+        _MovingGlow(color: AppTheme.electricBlue.withValues(alpha: 0.06), size: 500, start: const Offset(0.5, 0.2), end: const Offset(0.3, 0.5)),
       ],
     );
   }
 }
 
-class _NebulaPainter extends CustomPainter {
+class _MovingGlow extends StatelessWidget {
+  final Color color;
+  final double size;
+  final Offset start, end;
+  const _MovingGlow({required this.color, required this.size, required this.start, required this.end});
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
-
-    final path = Path();
-    path.moveTo(0, size.height * 0.2);
-    path.cubicTo(size.width * 0.4, size.height * 0.05, size.width * 0.6, size.height * 0.4, size.width, size.height * 0.1);
-    canvas.drawPath(path, paint);
-
-    final path2 = Path();
-    path2.moveTo(size.width, size.height * 0.8);
-    path2.cubicTo(size.width * 0.6, size.height * 0.95, size.width * 0.4, size.height * 0.6, 0, size.height * 0.9);
-    canvas.drawPath(path2, paint);
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment(start.dx, start.dy),
+      child: Container(
+        width: size, height: size,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      ),
+    ).animate(onPlay: (c) => c.repeat(reverse: true))
+     .move(begin: Offset.zero, end: end * 100, duration: 10.seconds, curve: Curves.easeInOut)
+     .blur(begin: const Offset(80, 80), end: const Offset(120, 120), duration: 5.seconds);
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

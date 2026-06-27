@@ -14,43 +14,48 @@ class FlirtProvider extends ChangeNotifier {
   // Generator state
   GeneratorState _state = GeneratorState.idle;
   String _currentMessage = '';
+  String _directVariant = '';
+  String _playfulVariant = '';
+  String _romanticVariant = '';
+  String _confidentVariant = '';
+  String _insight = '';
   String _errorMessage = '';
+  
+  // Advanced features state
+  Map<String, dynamic>? _screenshotAnalysis;
+  Map<String, dynamic>? _redFlagsAnalysis;
+  Map<String, dynamic>? _rizzScoreAnalysis;
+  Map<String, dynamic>? _voiceRizzData;
+  Map<String, dynamic>? _dailyFeedData;
+  
+  // Selected category and history
   FlirtCategory? _selectedCategory;
   List<String> _sessionHistory = [];
   int _historyIndex = -1;
 
-  // Mood Mixer — when set, the two source categories whose lines are being
-  // blended together. Null when a single, regular category is active.
+  // Mood Mixer sources
   (FlirtCategory, FlirtCategory)? _mixSources;
 
-  // Offline line bank cursor — tracks which shuffled lines have been shown
-  // per category so a session doesn't repeat itself until the bank is
-  // exhausted, then reshuffles.
+  // Offline queue
   final Map<String, List<String>> _offlineQueue = {};
 
-  // Personalization — both entirely optional. When set, lines are woven
-  // around this person's name and/or a short trait/interest you give them
-  // (e.g. "loves hiking", "plays guitar").
+  // Core personalization
   String _targetName = '';
   String _targetTrait = '';
-
-  // Vibe — an optional, user-picked situational context (e.g. "just met",
-  // "reconnecting"). This is a fixed list the person chooses from; it is
-  // never derived from analyzing any pasted-in conversation or message.
+  String _incomingMessage = '';
   String _vibeId = kNoVibe.id;
-
-  // Tracks whether the most recent successful line came from the AI or
-  // the offline fallback, so the UI can be transparent about which mode
-  // actually produced the current line (useful when AI mode is configured
-  // but a request silently failed and fell back).
   bool _lastLineWasAi = false;
-
-  // Conversation Arc — which stage of a conversation the shown lines are
-  // for: opener (the default, same as before), follow-up (what to say
-  // after a good reply), or deeper (genuine questions once it's flowing).
-  // Switching stages re-keys the offline queue so stages never bleed into
-  // each other or exhaust one another's content pool.
   ArcStage _arcStage = ArcStage.opener;
+
+  // AI Memory (Advanced Personalization Profiles)
+  String _userAge = '';
+  String _userCountry = '';
+  String _datingApp = 'Tinder';
+  String _relationshipStage = 'Just chatting';
+  String _communicationStyle = 'Playful';
+  String _loveLanguage = 'Words of affirmation';
+  String _introvertExtrovert = 'Ambivert';
+  String _humorType = 'Witty';
 
   // Favorites
   List<FavoriteMessage> _favorites = [];
@@ -58,8 +63,14 @@ class FlirtProvider extends ChangeNotifier {
   // Stats
   int _totalGenerated = 0;
 
+  // Getters
   GeneratorState get state => _state;
   String get currentMessage => _currentMessage;
+  String get directVariant => _directVariant;
+  String get playfulVariant => _playfulVariant;
+  String get romanticVariant => _romanticVariant;
+  String get confidentVariant => _confidentVariant;
+  String get insight => _insight;
   String get errorMessage => _errorMessage;
   FlirtCategory? get selectedCategory => _selectedCategory;
   List<FavoriteMessage> get favorites => List.unmodifiable(_favorites);
@@ -70,15 +81,31 @@ class FlirtProvider extends ChangeNotifier {
   int get historyCount => _sessionHistory.length;
   String get targetName => _targetName;
   String get targetTrait => _targetTrait;
-  bool get isPersonalized => _targetName.isNotEmpty || _targetTrait.isNotEmpty;
+  String get incomingMessage => _incomingMessage;
+  bool get isPersonalized => _targetName.isNotEmpty || _targetTrait.isNotEmpty || _incomingMessage.isNotEmpty;
   Vibe get selectedVibe => vibeById(_vibeId);
   bool get hasVibe => _vibeId != kNoVibe.id;
   bool get isCustomized => isPersonalized || hasVibe;
   bool get lastLineWasAi => _lastLineWasAi;
   ArcStage get arcStage => _arcStage;
+  
+  // Advanced features getters
+  Map<String, dynamic>? get screenshotAnalysis => _screenshotAnalysis;
+  Map<String, dynamic>? get redFlagsAnalysis => _redFlagsAnalysis;
+  Map<String, dynamic>? get rizzScoreAnalysis => _rizzScoreAnalysis;
+  Map<String, dynamic>? get voiceRizzData => _voiceRizzData;
+  Map<String, dynamic>? get dailyFeedData => _dailyFeedData;
 
-  /// Whether live AI generation is available (i.e. an API key was configured).
-  /// When false, the app transparently uses the offline line bank instead.
+  // Memory profile getters
+  String get userAge => _userAge;
+  String get userCountry => _userCountry;
+  String get datingApp => _datingApp;
+  String get relationshipStage => _relationshipStage;
+  String get communicationStyle => _communicationStyle;
+  String get loveLanguage => _loveLanguage;
+  String get introvertExtrovert => _introvertExtrovert;
+  String get humorType => _humorType;
+
   bool get isAiAvailable => ApiService.isConfigured;
 
   bool isFavorited(String message) =>
@@ -88,18 +115,13 @@ class FlirtProvider extends ChangeNotifier {
     _loadFavorites();
     _loadPersonalization();
     _loadVibe();
+    _loadAdvancedMemory();
   }
 
-  /// Updates the name/trait used to personalize lines. Either can be left
-  /// blank. Clears the offline queue for the current category's opener
-  /// stage so the new personalization takes effect on the very next
-  /// generated line, rather than waiting for the old (unpersonalized)
-  /// queue to drain first. Only the opener stage is keyed by
-  /// personalization — follow-up/deeper lines don't use it — so only that
-  /// queue needs clearing.
-  Future<void> setPersonalization({String? name, String? trait}) async {
+  Future<void> setPersonalization({String? name, String? trait, String? incoming}) async {
     _targetName = (name ?? _targetName).trim();
     _targetTrait = (trait ?? _targetTrait).trim();
+    _incomingMessage = (incoming ?? _incomingMessage).trim();
     AnalyticsService.personalizationUsed();
     if (_selectedCategory != null) {
       _offlineQueue.remove('${_selectedCategory!.id}:${ArcStage.opener.name}');
@@ -108,10 +130,6 @@ class FlirtProvider extends ChangeNotifier {
     await _savePersonalization();
   }
 
-  /// Updates the active vibe (situational context). Pass `kNoVibe.id` (or
-  /// call with null) to clear it back to "no specific vibe". This only
-  /// affects AI-mode prompting — the offline bank doesn't currently have
-  /// vibe-specific lines, so vibe has no effect when running offline.
   Future<void> setVibe(String? vibeId) async {
     _vibeId = vibeId ?? kNoVibe.id;
     AnalyticsService.vibeSelected(_vibeId);
@@ -119,14 +137,28 @@ class FlirtProvider extends ChangeNotifier {
     await _saveVibe();
   }
 
-  /// Switches which stage of the Conversation Arc is active. Clears the
-  /// current line/history so the screen doesn't show an opener line
-  /// labeled as a follow-up (or vice versa) right after switching.
-  ///
-  /// Note: when the Mood Mixer is active, follow-up and deeper stages use
-  /// only the first of the two mixed categories — blending two categories'
-  /// worth of follow-up lines together reads as confusing rather than
-  /// genuinely mixed, so this keeps it simple and predictable instead.
+  Future<void> updateAdvancedMemory({
+    String? age,
+    String? country,
+    String? datingApp,
+    String? relationshipStage,
+    String? communicationStyle,
+    String? loveLanguage,
+    String? introvertExtrovert,
+    String? humorType,
+  }) async {
+    _userAge = age ?? _userAge;
+    _userCountry = country ?? _userCountry;
+    _datingApp = datingApp ?? _datingApp;
+    _relationshipStage = relationshipStage ?? _relationshipStage;
+    _communicationStyle = communicationStyle ?? _communicationStyle;
+    _loveLanguage = loveLanguage ?? _loveLanguage;
+    _introvertExtrovert = introvertExtrovert ?? _introvertExtrovert;
+    _humorType = humorType ?? _humorType;
+    notifyListeners();
+    await _saveAdvancedMemory();
+  }
+
   void setArcStage(ArcStage stage) {
     if (_arcStage == stage) return;
     _arcStage = stage;
@@ -148,9 +180,6 @@ class FlirtProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Mood Mixer: blends two categories together into one combined style.
-  /// Generated lines are pulled alternately from each source category's
-  /// offline pool (or, in AI mode, generated from a combined style hint).
   void selectMixedCategories(FlirtCategory a, FlirtCategory b) {
     _mixSources = (a, b);
     AnalyticsService.moodMixerUsed(a.id, b.id);
@@ -174,47 +203,57 @@ class FlirtProvider extends ChangeNotifier {
     final catId = _selectedCategory!.id;
 
     try {
-      String line;
-
-      // AI generation is only used for the opener stage. Follow-up and
-      // "going deeper" lines are served from curated content always, even
-      // when an AI key is configured — these are more delicate moments in
-      // a conversation, and reliably appropriate pre-written lines are a
-      // better fit here than open-ended generation.
       if (ApiService.isConfigured && _arcStage == ArcStage.opener) {
-        // AI mode: try live generation, but gracefully fall back to the
-        // offline bank if the request fails for any reason (no internet,
-        // rate limit, bad key, etc.) instead of showing an error screen.
         try {
-          line = await ApiService.generatePickupLine(
+          final result = await ApiService.generatePickupLineExtended(
             category: _selectedCategory!,
             recentLines: _sessionHistory,
             languageCode: languageCode,
             vibe: hasVibe ? selectedVibe : null,
             userContext: _buildUserContext(),
+            incomingMessage: _incomingMessage.isNotEmpty ? _incomingMessage : null,
+            age: _userAge,
+            country: _userCountry,
+            datingApp: _datingApp,
+            relationshipStage: _relationshipStage,
+            communicationStyle: _communicationStyle,
+            loveLanguage: _loveLanguage,
+            introvertExtrovert: _introvertExtrovert,
+            humorType: _humorType,
           );
+          _currentMessage = result['main'] ?? '';
+          _directVariant = result['direct'] ?? result['short'] ?? '';
+          _playfulVariant = result['playful'] ?? '';
+          _romanticVariant = result['romantic'] ?? '';
+          _confidentVariant = result['confident'] ?? '';
+          _insight = result['insight'] ?? '';
           _lastLineWasAi = true;
         } catch (_) {
-          line = _nextOfflineLine(catId);
+          _currentMessage = _nextOfflineLine(catId);
+          _directVariant = '';
+          _playfulVariant = '';
+          _romanticVariant = '';
+          _confidentVariant = '';
+          _insight = '';
           _lastLineWasAi = false;
         }
       } else {
-        // Default offline mode — instant, free, works with no setup.
-        // Small artificial delay so the loading/shimmer animation still
-        // reads as intentional rather than glitchy.
-        await Future.delayed(const Duration(milliseconds: 550));
-        line = _nextOfflineLine(catId);
+        await Future.delayed(const Duration(milliseconds: 1200));
+        _currentMessage = _nextOfflineLine(catId);
+        _directVariant = '';
+        _playfulVariant = '';
+        _romanticVariant = '';
+        _confidentVariant = '';
+        _insight = '';
         _lastLineWasAi = false;
       }
 
-      // Truncate history if we navigated back before generating new
       if (_historyIndex < _sessionHistory.length - 1) {
         _sessionHistory = _sessionHistory.sublist(0, _historyIndex + 1);
       }
 
-      _sessionHistory.add(line);
+      _sessionHistory.add(_currentMessage);
       _historyIndex = _sessionHistory.length - 1;
-      _currentMessage = line;
       AnalyticsService.lineGenerated(_selectedCategory!.id, _lastLineWasAi);
       _state = GeneratorState.success;
       _totalGenerated++;
@@ -226,15 +265,109 @@ class FlirtProvider extends ChangeNotifier {
     }
   }
 
-  /// Pulls the next line from a per-category-and-stage shuffled queue,
-  /// reshuffling (and avoiding an immediate repeat) once the queue runs
-  /// dry. The queue is generated with current name/trait personalization
-  /// baked in (opener stage only — see [shuffledArcLinesFor]).
-  ///
-  /// When the Mood Mixer is active (`_mixSources` set) and the stage is
-  /// the opener, the queue instead interleaves shuffled lines from both
-  /// source categories. For follow-up/deeper stages, mixing is skipped in
-  /// favor of just the first mixed category (see [setArcStage]).
+  // Visual Screenshot Analyzer
+  Future<void> runScreenshotAnalysis(String base64Image, {String platform = 'WhatsApp'}) async {
+    _state = GeneratorState.loading;
+    _errorMessage = '';
+    _screenshotAnalysis = null;
+    notifyListeners();
+
+    try {
+      final res = await ApiService.analyzeScreenshot(base64Image: base64Image, platform: platform);
+      _screenshotAnalysis = res;
+      _state = GeneratorState.success;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = GeneratorState.error;
+      notifyListeners();
+    }
+  }
+
+  // Red Flags analysis
+  Future<void> runRedFlagsAnalysis(String text) async {
+    _state = GeneratorState.loading;
+    _errorMessage = '';
+    _redFlagsAnalysis = null;
+    notifyListeners();
+
+    try {
+      final res = await ApiService.analyzeRedFlags(conversationText: text);
+      _redFlagsAnalysis = res;
+      _state = GeneratorState.success;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = GeneratorState.error;
+      notifyListeners();
+    }
+  }
+
+  // Rate My Rizz Scorer
+  Future<void> runRizzScorer(String text) async {
+    _state = GeneratorState.loading;
+    _errorMessage = '';
+    _rizzScoreAnalysis = null;
+    notifyListeners();
+
+    try {
+      final res = await ApiService.scoreConversation(conversationText: text);
+      _rizzScoreAnalysis = res;
+      _state = GeneratorState.success;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = GeneratorState.error;
+      notifyListeners();
+    }
+  }
+
+  // Voice Flirting
+  Future<void> runVoiceRizz(String text) async {
+    _state = GeneratorState.loading;
+    _errorMessage = '';
+    _voiceRizzData = null;
+    notifyListeners();
+
+    try {
+      final res = await ApiService.voiceRizz(phrase: text);
+      _voiceRizzData = res;
+      _state = GeneratorState.success;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = GeneratorState.error;
+      notifyListeners();
+    }
+  }
+
+  // Daily Feed Load
+  Future<void> runDailyFeedLoad() async {
+    _state = GeneratorState.loading;
+    _errorMessage = '';
+    notifyListeners();
+
+    try {
+      final res = await ApiService.getDailyFeed();
+      _dailyFeedData = res;
+      _state = GeneratorState.success;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = GeneratorState.error;
+      notifyListeners();
+    }
+  }
+
+  // Submit Feedback
+  Future<bool> sendAppFeedback(String name, String email, String comments) async {
+    try {
+      return await ApiService.submitFeedback(name: name, email: email, comments: comments);
+    } catch (_) {
+      return false;
+    }
+  }
+
   String _nextOfflineLine(String catId) {
     final queueKey = '$catId:${_arcStage.name}';
     var queue = _offlineQueue[queueKey];
@@ -242,15 +375,14 @@ class FlirtProvider extends ChangeNotifier {
       queue = (_mixSources != null && _arcStage == ArcStage.opener)
           ? _buildMixedQueue(_mixSources!.$1, _mixSources!.$2)
           : shuffledArcLinesFor(
-        _arcStage,
-        _mixSources != null ? _mixSources!.$1.id : catId,
-        name: _targetName.isEmpty ? null : _targetName,
-        trait: _targetTrait.isEmpty ? null : _targetTrait,
-      );
+              _arcStage,
+              _mixSources != null ? _mixSources!.$1.id : catId,
+              name: _targetName.isEmpty ? null : _targetName,
+              trait: _targetTrait.isEmpty ? null : _targetTrait,
+            );
       _offlineQueue[queueKey] = queue;
     }
     final line = queue.removeAt(0);
-    // Avoid showing the exact same line twice in a row if possible.
     if (line == _currentMessage && queue.isNotEmpty) {
       queue.add(line);
       return queue.removeAt(0);
@@ -258,10 +390,6 @@ class FlirtProvider extends ChangeNotifier {
     return line;
   }
 
-  /// Builds a combined, shuffled queue from two categories' offline pools.
-  /// Lines are tagged with a small label so it's clear which "half" of
-  /// the blend each line is leaning toward, which reads more like an
-  /// intentional mix than two unrelated categories taking turns.
   List<String> _buildMixedQueue(FlirtCategory a, FlirtCategory b) {
     final name = _targetName.isEmpty ? null : _targetName;
     final trait = _targetTrait.isEmpty ? null : _targetTrait;
@@ -278,8 +406,6 @@ class FlirtProvider extends ChangeNotifier {
     return combined;
   }
 
-  /// Builds a short natural-language hint for the AI service describing
-  /// the personalization, so AI-generated lines benefit from it too.
   String? _buildUserContext() {
     if (!isPersonalized) return null;
     final parts = <String>[];
@@ -298,12 +424,11 @@ class FlirtProvider extends ChangeNotifier {
     }
   }
 
-  // Favorites management
   Future<void> toggleFavorite() async {
     if (_currentMessage.isEmpty || _selectedCategory == null) return;
 
     final existing = _favorites.indexWhere(
-          (f) => f.message == _currentMessage && f.catId == _selectedCategory!.id,
+      (f) => f.message == _currentMessage && f.catId == _selectedCategory!.id,
     );
 
     if (existing >= 0) {
@@ -316,13 +441,10 @@ class FlirtProvider extends ChangeNotifier {
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           catId: _selectedCategory!.id,
           catName: _selectedCategory!.name,
-          // Store the icon's codePoint rather than an emoji string so it
-          // round-trips cleanly through JSON and renders via IconData.
           catIconCodePoint: _selectedCategory!.icon.codePoint,
           message: _currentMessage,
           savedAt: DateTime.now(),
-          arcStageLabel:
-          _arcStage == ArcStage.opener ? null : _arcStage.label,
+          arcStageLabel: _arcStage == ArcStage.opener ? null : _arcStage.label,
         ),
       );
     }
@@ -349,8 +471,6 @@ class FlirtProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (_) {
-      // Corrupted or missing local storage — start with an empty list
-      // rather than crashing the app on launch.
       _favorites = [];
     }
   }
@@ -368,17 +488,16 @@ class FlirtProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _targetName = prefs.getString('fm_target_name') ?? '';
       _targetTrait = prefs.getString('fm_target_trait') ?? '';
+      _incomingMessage = prefs.getString('fm_incoming_msg') ?? '';
       if (isPersonalized) notifyListeners();
-    } catch (_) {
-      // No saved personalization yet, or storage unavailable — fine to
-      // just start with the defaults (blank/unpersonalized).
-    }
+    } catch (_) {}
   }
 
   Future<void> _savePersonalization() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('fm_target_name', _targetName);
     await prefs.setString('fm_target_trait', _targetTrait);
+    await prefs.setString('fm_incoming_msg', _incomingMessage);
   }
 
   Future<void> _loadVibe() async {
@@ -386,14 +505,38 @@ class FlirtProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString('fm_vibe_id');
       if (saved != null) _vibeId = saved;
-    } catch (_) {
-      // No saved vibe yet, or storage unavailable — default ("no specific
-      // vibe") is already set, so there's nothing else to do here.
-    }
+    } catch (_) {}
   }
 
   Future<void> _saveVibe() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('fm_vibe_id', _vibeId);
+  }
+
+  Future<void> _loadAdvancedMemory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _userAge = prefs.getString('fm_user_age') ?? '';
+      _userCountry = prefs.getString('fm_user_country') ?? '';
+      _datingApp = prefs.getString('fm_dating_app') ?? 'Tinder';
+      _relationshipStage = prefs.getString('fm_rel_stage') ?? 'Just chatting';
+      _communicationStyle = prefs.getString('fm_comm_style') ?? 'Playful';
+      _loveLanguage = prefs.getString('fm_love_lang') ?? 'Words of affirmation';
+      _introvertExtrovert = prefs.getString('fm_personality') ?? 'Ambivert';
+      _humorType = prefs.getString('fm_humor_type') ?? 'Witty';
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> _saveAdvancedMemory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fm_user_age', _userAge);
+    await prefs.setString('fm_user_country', _userCountry);
+    await prefs.setString('fm_dating_app', _datingApp);
+    await prefs.setString('fm_rel_stage', _relationshipStage);
+    await prefs.setString('fm_comm_style', _communicationStyle);
+    await prefs.setString('fm_love_lang', _loveLanguage);
+    await prefs.setString('fm_personality', _introvertExtrovert);
+    await prefs.setString('fm_humor_type', _humorType);
   }
 }

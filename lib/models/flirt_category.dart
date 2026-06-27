@@ -1,16 +1,11 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class FlirtCategory {
   final String id;
-  
-  /// English name for AI prompting
   final String name;
-  
   final IconData icon;
-
-  /// English tagline for AI prompting
   final String tagline;
-
   final List<Color> gradientColors;
   final String styleHint;
 
@@ -58,31 +53,16 @@ class FavoriteMessage {
     catId: j['catId'],
     catName: j['catName'],
     catIconCodePoint: j['catIconCodePoint'] as int? ??
-        CupertinoIcons.bookmark_fill.codePoint,
+        LucideIcons.bookmark.codePoint,
     message: j['message'],
     savedAt: DateTime.parse(j['savedAt']),
     arcStageLabel: j['arcStageLabel'] as String?,
   );
 
   IconData get catIcon {
-    return switch (catIconCodePoint) {
-      0xf442 => CupertinoIcons.heart,
-      0xf4ac => CupertinoIcons.smiley,
-      0xf4b5 => CupertinoIcons.sun_max,
-      0xf433 => CupertinoIcons.game_controller,
-      0xf3ee => CupertinoIcons.briefcase,
-      0xf3d6 => CupertinoIcons.bolt,
-      0xf451 => CupertinoIcons.leaf_arrow_circlepath,
-      0xf468 => CupertinoIcons.moon,
-      0xf42c => CupertinoIcons.flame,
-      0xf3fb => CupertinoIcons.envelope,
-      0xf495 => CupertinoIcons.square_grid_3x2,
-      0xf43c => CupertinoIcons.hand_thumbsup,
-      0xf460 => CupertinoIcons.mic,
-      0xf4b9 => CupertinoIcons.text_quote,
-      0xf480 => CupertinoIcons.rectangle_stack,
-      _ => CupertinoIcons.bookmark_fill,
-    };
+    // Look up based on common Lucide icon code points, or fall back to bookmark
+    // ignore: non_const_argument_for_const_parameter
+    return IconData(catIconCodePoint, fontFamily: 'LucideIcons', fontPackage: 'lucide_icons');
   }
 }
 
@@ -91,7 +71,7 @@ FlirtCategory buildMixedCategory(FlirtCategory a, FlirtCategory b) {
   return FlirtCategory(
     id: 'mix:${ids[0]}+${ids[1]}',
     name: '${a.name} + ${b.name}',
-    icon: CupertinoIcons.rectangle_stack,
+    icon: LucideIcons.layers,
     tagline: 'Mixed mood',
     gradientColors: [a.gradientColors.first, b.gradientColors.last],
     styleHint: '${a.styleHint}; also blended with: ${b.styleHint}',
@@ -102,7 +82,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'romantic',
     name: 'Romantic',
-    icon: CupertinoIcons.heart,
+    icon: LucideIcons.heart,
     tagline: 'Touch the heart',
     gradientColors: [Color(0xFF2C3039), Color(0xFFE5C07B)],
     styleHint: 'deeply romantic, poetic, heartfelt, uses beautiful metaphors about love',
@@ -110,7 +90,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'funny',
     name: 'Funny',
-    icon: CupertinoIcons.smiley,
+    icon: LucideIcons.smile,
     tagline: 'Make them laugh',
     gradientColors: [Color(0xFF2C3039), Color(0xFFA2845E)],
     styleHint: 'genuinely funny, uses clever wordplay and puns, witty',
@@ -118,7 +98,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'light',
     name: 'Light',
-    icon: CupertinoIcons.sun_max,
+    icon: LucideIcons.sun,
     tagline: 'Keep it sweet',
     gradientColors: [Color(0xFF2C3039), Color(0xFF8A909A)],
     styleHint: 'light, sweet, innocent, casual and warm compliments',
@@ -126,7 +106,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'playful',
     name: 'Playful',
-    icon: CupertinoIcons.game_controller,
+    icon: LucideIcons.gamepad2,
     tagline: 'Fun & teasing',
     gradientColors: [Color(0xFF1F2229), Color(0xFFD4AF37)],
     styleHint: 'playfully teasing, witty banter, confident yet fun',
@@ -134,7 +114,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'classy',
     name: 'Classy',
-    icon: CupertinoIcons.briefcase,
+    icon: LucideIcons.briefcase,
     tagline: 'Effortless elegance',
     gradientColors: [Color(0xFF121418), Color(0xFFE5C07B)],
     styleHint: 'highly sophisticated, elegant, uses refined vocabulary, old-world charm',
@@ -142,7 +122,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'confident',
     name: 'Confident',
-    icon: CupertinoIcons.bolt,
+    icon: LucideIcons.bolt,
     tagline: 'Own the room',
     gradientColors: [Color(0xFF1F2229), Color(0xFFE0E3E8)],
     styleHint: 'boldly confident, self-assured, direct and strong without arrogance',
@@ -150,7 +130,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'shy',
     name: 'Shy',
-    icon: CupertinoIcons.leaf_arrow_circlepath,
+    icon: LucideIcons.helpCircle,
     tagline: 'Adorably real',
     gradientColors: [Color(0xFF1F2229), Color(0xFF636971)],
     styleHint: 'nervously sweet, adorably awkward, genuine and vulnerable',
@@ -158,7 +138,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'mysterious',
     name: 'Mysterious',
-    icon: CupertinoIcons.moon,
+    icon: LucideIcons.moon,
     tagline: 'Leave them curious',
     gradientColors: [Color(0xFF0B0B0D), Color(0xFF8A909A)],
     styleHint: 'deeply intriguing, mysterious and enigmatic, pulls them closer',
@@ -166,15 +146,15 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'spicy',
     name: 'Spicy',
-    icon: CupertinoIcons.flame,
+    icon: LucideIcons.flame,
     tagline: 'Turn up the heat',
     gradientColors: [Color(0xFF1F2229), Color(0xFFD4AF37)],
-    styleHint: 'passionately intense, bold and fiery, tastefully forward',
+    styleHint: 'passionately intense, bold and fiery, tastesfully forward',
   ),
   const FlirtCategory(
     id: 'oldschool',
     name: 'Old-School',
-    icon: CupertinoIcons.envelope,
+    icon: LucideIcons.mail,
     tagline: 'Timeless romance',
     gradientColors: [Color(0xFF1F2229), Color(0xFFE5C07B)],
     styleHint: 'vintage and classic, letter-writing style, old-fashioned romantic charm',
@@ -182,7 +162,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'nerdy',
     name: 'Nerdy',
-    icon: CupertinoIcons.square_grid_3x2,
+    icon: LucideIcons.binary,
     tagline: 'Geek is chic',
     gradientColors: [Color(0xFF1F2229), Color(0xFF8A909A)],
     styleHint: 'uses science, math, tech or pop-culture geek references cleverly',
@@ -190,7 +170,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'wholesome',
     name: 'Wholesome',
-    icon: CupertinoIcons.hand_thumbsup,
+    icon: LucideIcons.thumbsUp,
     tagline: 'Warm the soul',
     gradientColors: [Color(0xFF1F2229), Color(0xFFE0E3E8)],
     styleHint: 'genuinely wholesome, kind, uplifting and feel-good',
@@ -198,7 +178,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'smooth',
     name: 'Smooth',
-    icon: CupertinoIcons.mic,
+    icon: LucideIcons.mic,
     tagline: 'Ice cold delivery',
     gradientColors: [Color(0xFF121418), Color(0xFFD4AF37)],
     styleHint: 'ultra-smooth and cool, effortless charm, James Bond confidence',
@@ -206,7 +186,7 @@ final List<FlirtCategory> kCategories = [
   const FlirtCategory(
     id: 'poetic',
     name: 'Poetic',
-    icon: CupertinoIcons.text_quote,
+    icon: LucideIcons.quote,
     tagline: 'Pure artistry',
     gradientColors: [Color(0xFF121418), Color(0xFFE5C07B)],
     styleHint: 'lyrical and poetic, uses verse-like rhythm and vivid imagery',

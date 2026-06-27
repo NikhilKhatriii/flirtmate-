@@ -5,54 +5,69 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../widgets/typewriter_text.dart';
+import 'dart:async';
 import '../providers/flirt_provider.dart';
 import '../providers/language_provider.dart';
 import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../data/arc_lines.dart';
 import '../widgets/glass_card.dart';
-import '../widgets/shimmer_loading.dart';
+import '../widgets/animated_gradient_button.dart';
 import '../widgets/personalize_sheet.dart';
 import 'favorites_screen.dart';
 
-/// A premium, high-status message generator with an editorial aesthetic.
 class GeneratorScreen extends StatefulWidget {
   const GeneratorScreen({super.key});
-
   @override
   State<GeneratorScreen> createState() => _GeneratorScreenState();
 }
 
-class _GeneratorScreenState extends State<GeneratorScreen>
-    with SingleTickerProviderStateMixin {
+class _GeneratorScreenState extends State<GeneratorScreen> with TickerProviderStateMixin {
   late AnimationController _msgCtrl;
-  double _dragStart = 0;
+  String _thinkingMsg = "✨ Reading the conversation...";
+  Timer? _thinkingTimer;
+  final List<String> _thinkingMessages = [
+    "✨ Reading the conversation...",
+    "🧠 Understanding their personality...",
+    "💬 Crafting something natural...",
+    "❤️ Adding a little charm...",
+  ];
 
   @override
   void initState() {
     super.initState();
     AnalyticsService.screenView('generator_screen');
-    _msgCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _msgCtrl = AnimationController(vsync: this, duration: 400.ms);
+    _startThinking();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final lp = context.read<LanguageProvider>();
-      context.read<FlirtProvider>().generateLine(
-        languageCode: lp.currentLanguage.name,
-      );
+      context.read<FlirtProvider>().generateLine(languageCode: lp.currentLanguage.name);
+    });
+  }
+
+  void _startThinking() {
+    int i = 0;
+    _thinkingTimer = Timer.periodic(1500.ms, (timer) {
+      if (!mounted) return;
+      setState(() => _thinkingMsg = _thinkingMessages[i % _thinkingMessages.length]);
+      i++;
     });
   }
 
   @override
   void dispose() {
     _msgCtrl.dispose();
+    _thinkingTimer?.cancel();
     super.dispose();
   }
 
-  void _animateAndGenerate() {
+  void _generate() {
+    HapticFeedback.mediumImpact();
     final lp = context.read<LanguageProvider>();
     _msgCtrl.forward(from: 0).then((_) {
-      context.read<FlirtProvider>().generateLine(
-        languageCode: lp.currentLanguage.name,
-      );
+      context.read<FlirtProvider>().generateLine(languageCode: lp.currentLanguage.name);
       _msgCtrl.reverse();
     });
   }
@@ -62,74 +77,60 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     final lp = context.watch<LanguageProvider>();
     final provider = context.watch<FlirtProvider>();
     final cat = provider.selectedCategory;
-    
     if (cat == null) return const SizedBox.shrink();
-    final favCount = provider.favorites.length;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(context, lp, cat, favCount),
+            _buildAppBar(context, provider, lp),
             _buildArcStageSelector(provider, lp),
-            _buildCategoryBadge(cat, provider, lp),
             _buildPersonalizationBar(provider, lp),
-            _buildHistoryCounter(provider, lp),
-            _buildMainMessageArea(provider, cat),
-            _buildActionButtons(context, provider, lp, cat),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: provider.state == GeneratorState.loading
+                    ? _buildThinkingState()
+                    : _buildMainContent(provider, lp, cat),
+              ),
+            ),
+            _buildBottomActions(provider, lp),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context, LanguageProvider lp, dynamic cat, int favCount) {
+  Widget _buildAppBar(BuildContext context, FlirtProvider provider, LanguageProvider lp) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
           CupertinoButton(
             padding: const EdgeInsets.all(12),
-            onPressed: () => Navigator.pop(context),
-            child: const Icon(CupertinoIcons.chevron_left, color: Colors.white, size: 24),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context);
+            },
+            child: const Icon(LucideIcons.chevronLeft, color: Colors.white, size: 24),
           ),
           const Spacer(),
           Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                lp.translate(cat.id).toUpperCase(),
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textSecondary,
-                  letterSpacing: 2.0,
-                ),
-              ),
-              Text(
-                "Editorial Selection",
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  color: AppTheme.electricBlue.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(lp.translate(provider.selectedCategory!.id).toUpperCase(),
+                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w900, color: AppTheme.textMuted, letterSpacing: 2.0)),
+              Text("PREMIUM SELECTION", style: GoogleFonts.inter(fontSize: 10, color: Theme.of(context).primaryColor.withValues(alpha: 0.5))),
             ],
           ),
           const Spacer(),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CupertinoButton(
-                padding: const EdgeInsets.all(12),
-                onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const FavoritesScreen())),
-                child: const Icon(CupertinoIcons.heart, color: Colors.white, size: 24),
-              ),
-              if (favCount > 0)
-                Positioned(top: 8, right: 8, child: _Badge(count: favCount)),
-            ],
+          CupertinoButton(
+            padding: const EdgeInsets.all(12),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()));
+            },
+            child: const Icon(LucideIcons.heart, color: Colors.white, size: 24),
           ),
         ],
       ),
@@ -138,41 +139,39 @@ class _GeneratorScreenState extends State<GeneratorScreen>
 
   Widget _buildArcStageSelector(FlirtProvider provider, LanguageProvider lp) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Row(
         children: ArcStage.values.map((stage) {
-          final isSelected = provider.arcStage == stage;
+          final sel = provider.arcStage == stage;
           return Expanded(
             child: GestureDetector(
-              onTap: () => provider.setArcStage(stage),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                provider.setArcStage(stage);
+              },
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
+                duration: 200.ms,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.electricBlue.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.02),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected ? AppTheme.electricBlue.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.05),
-                    width: 1,
-                  ),
+                  color: sel ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.02),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: sel ? Theme.of(context).primaryColor.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05)),
                 ),
                 child: Column(
                   children: [
                     Icon(
-                      stage.icon,
+                      stage == ArcStage.opener
+                          ? LucideIcons.messageSquare
+                          : stage == ArcStage.followUp
+                              ? LucideIcons.arrowUpRight
+                              : LucideIcons.heart,
                       size: 16,
-                      color: isSelected ? AppTheme.electricBlue : AppTheme.textMuted,
+                      color: sel ? Theme.of(context).primaryColor : AppTheme.textMuted,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      lp.translate('stage_${stage.name}'),
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        color: isSelected ? Colors.white : AppTheme.textSecondary,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
+                    Text(lp.translate('stage_${stage.name}'),
+                        style: GoogleFonts.inter(fontSize: 10, color: sel ? Colors.white : AppTheme.textSecondary, fontWeight: sel ? FontWeight.w700 : FontWeight.w500)),
                   ],
                 ),
               ),
@@ -183,88 +182,29 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     );
   }
 
-  Widget _buildCategoryBadge(dynamic cat, FlirtProvider provider, LanguageProvider lp) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: cat.gradientColors),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(cat.icon, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    lp.translate('${cat.id}_tagline').toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.textMuted, letterSpacing: 1.0,
-                    ),
-                  ),
-                  Text(
-                    lp.translate('${cat.id}_desc'),
-                    style: GoogleFonts.inter(fontSize: 13, color: Colors.white70),
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              provider.isAiAvailable ? CupertinoIcons.sparkles : CupertinoIcons.infinite,
-              size: 14, color: AppTheme.electricBlue,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildPersonalizationBar(FlirtProvider provider, LanguageProvider lp) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: GestureDetector(
-        onTap: () => showPersonalizeSheet(context),
-        child: Container(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          showPersonalizeSheet(context);
+        },
+        child: GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: provider.isCustomized ? AppTheme.electricBlue.withValues(alpha: 0.08) : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: provider.isCustomized ? AppTheme.electricBlue.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
-            ),
-          ),
+          borderRadius: 16,
           child: Row(
             children: [
-              Icon(
-                provider.isCustomized ? CupertinoIcons.person_crop_circle_fill : CupertinoIcons.pencil,
-                size: 18, color: provider.isCustomized ? AppTheme.electricBlue : AppTheme.textMuted,
-              ),
+              Icon(LucideIcons.sliders, size: 16, color: Theme.of(context).primaryColor),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  provider.isCustomized ? _personalizationSummary(provider, lp) : lp.translate('personalize_hint'),
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: provider.isCustomized ? Colors.white : AppTheme.textSecondary,
-                    fontWeight: provider.isCustomized ? FontWeight.w600 : FontWeight.w400,
-                  ),
+                  provider.isCustomized ? _personalizationSummary(provider, lp) : "Personalize for better accuracy",
+                  style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Icon(CupertinoIcons.chevron_right, size: 14, color: Colors.white24),
+              const Icon(LucideIcons.chevronRight, size: 14, color: Colors.white24),
             ],
           ),
         ),
@@ -272,26 +212,19 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     );
   }
 
-  Widget _buildHistoryCounter(FlirtProvider provider, LanguageProvider lp) {
-    if (provider.historyCount <= 0) return const SizedBox(height: 12);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      child: Row(
+  Widget _buildThinkingState() {
+    return Center(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(20),
-            ),
+          CupertinoActivityIndicator(radius: 14, color: Theme.of(context).primaryColor),
+          const SizedBox(height: 24),
+          AnimatedSwitcher(
+            duration: 400.ms,
             child: Text(
-              provider.state == GeneratorState.loading
-                  ? "CRAFTING..."
-                  : "${provider.historyIndex + 1} / ${provider.historyCount}",
-              style: GoogleFonts.inter(
-                fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.electricBlue, letterSpacing: 1,
-              ),
+              _thinkingMsg,
+              key: ValueKey(_thinkingMsg),
+              style: GoogleFonts.inter(fontSize: 15, color: Colors.white70, fontWeight: FontWeight.w600, fontStyle: FontStyle.italic),
             ),
           ),
         ],
@@ -299,68 +232,174 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     );
   }
 
-  Widget _buildMainMessageArea(FlirtProvider provider, dynamic cat) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: GestureDetector(
-          onHorizontalDragStart: (d) => _dragStart = d.localPosition.dx,
-          onHorizontalDragEnd: (d) {
-            final dx = d.localPosition.dx - _dragStart;
-            if (provider.state == GeneratorState.loading) return;
-            if (dx < -60) _animateAndGenerate();
-            else if (dx > 60 && provider.hasPrev) provider.navigateHistory(-1);
-          },
-          child: _MessageDisplayCard(provider: provider, animCtrl: _msgCtrl),
-        ),
+  Widget _buildMainContent(FlirtProvider provider, LanguageProvider lp, dynamic cat) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          _buildVariantTabs(provider),
+          const SizedBox(height: 20),
+          _buildCoachInsight(provider),
+        ],
       ),
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, FlirtProvider provider, LanguageProvider lp, dynamic cat) {
-    final bool isSuccess = provider.state == GeneratorState.success;
+  Widget _buildVariantTabs(FlirtProvider provider) {
+    final Map<String, String> variants = {
+      "MAIN": provider.currentMessage,
+      if (provider.directVariant.isNotEmpty) "SHORT": provider.directVariant,
+      if (provider.romanticVariant.isNotEmpty) "ROMANTIC": provider.romanticVariant,
+      if (provider.playfulVariant.isNotEmpty) "PLAYFUL": provider.playfulVariant,
+      if (provider.confidentVariant.isNotEmpty) "CONFIDENT": provider.confidentVariant,
+    };
+
+    if (variants.length <= 1) {
+      // If offline/fallback yields only one string, render single view
+      return GlassCard(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        borderRadius: 32,
+        child: SingleChildScrollView(
+          child: TypewriterText(
+            text: provider.currentMessage,
+            style: GoogleFonts.cormorantGaramond(fontSize: 28, color: Colors.white, height: 1.35, fontWeight: FontWeight.w600, fontStyle: FontStyle.italic),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05);
+    }
+
+    return DefaultTabController(
+      length: variants.length,
+      child: Column(
+        children: [
+          TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            dividerColor: Colors.transparent,
+            indicatorColor: Theme.of(context).primaryColor,
+            labelColor: Colors.white,
+            unselectedLabelColor: AppTheme.textMuted,
+            labelStyle: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.0),
+            tabs: variants.keys.map((title) => Tab(text: title)).toList(),
+          ),
+          const SizedBox(height: 12),
+          GlassCard(
+            width: double.infinity,
+            borderRadius: 32,
+            child: SizedBox(
+              height: 200,
+              child: TabBarView(
+                physics: const BouncingScrollPhysics(),
+                children: variants.values.map((text) {
+                  return Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: TypewriterText(
+                          text: text,
+                          style: GoogleFonts.cormorantGaramond(fontSize: 24, color: Colors.white, height: 1.35, fontWeight: FontWeight.w600, fontStyle: FontStyle.italic),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 600.ms);
+  }
+
+  Widget _buildCoachInsight(FlirtProvider provider) {
+    final insight = provider.insight.isNotEmpty
+        ? provider.insight
+        : "This line leverages subtle intrigue. It shows high-status curiosity without sounding desperate, perfect for the ${provider.selectedCategory!.name} dynamic.";
+
+    final List<String> bulletPoints = [];
+    if (insight.contains('•')) {
+      bulletPoints.addAll(insight.split('•').map((e) => e.trim()).where((e) => e.isNotEmpty));
+    } else if (insight.contains('\n')) {
+      bulletPoints.addAll(insight.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty));
+    } else {
+      // Split by sentence (periods followed by space, or end of string)
+      final regExp = RegExp(r'(?<=[.!?])\s+');
+      bulletPoints.addAll(insight.split(regExp).map((e) => e.trim()).where((e) => e.isNotEmpty));
+    }
+
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      borderRadius: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(LucideIcons.compass, size: 14, color: AppTheme.champagneGold),
+              const SizedBox(width: 8),
+              Text("WHY THIS WORKS", style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w900, color: AppTheme.champagneGold, letterSpacing: 1.0)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...bulletPoints.map((point) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(LucideIcons.checkCircle2, size: 14, color: AppTheme.emeraldGreen),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      point,
+                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    ).animate().fadeIn(delay: 400.ms);
+  }
+
+  Widget _buildBottomActions(FlirtProvider provider, LanguageProvider lp) {
+    final bool ok = provider.state == GeneratorState.success;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: _MainActionBtn(
-                  label: isSuccess ? "NEW LINE" : "GENERATE",
-                  icon: CupertinoIcons.sparkles,
-                  onTap: _animateAndGenerate,
-                  isLoading: provider.state == GeneratorState.loading,
-                ),
+          AnimatedGradientButton(
+            onTap: provider.state == GeneratorState.loading ? null : _generate,
+            child: Center(
+              child: Text(
+                provider.state == GeneratorState.loading ? "CRAFTING..." : "NEW LINE",
+                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.5),
               ),
-              const SizedBox(width: 12),
-              _SecondaryActionBtn(
-                icon: provider.isFavorited(provider.currentMessage) ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-                onTap: isSuccess ? () => provider.toggleFavorite() : null,
-                activeColor: AppTheme.neonPink,
-                isActive: provider.isFavorited(provider.currentMessage),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: _TertiaryActionBtn(
-                  label: "COPY",
-                  icon: CupertinoIcons.doc_on_doc,
-                  onTap: isSuccess ? () => _copyToClipboard(context, provider.currentMessage) : null,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _TertiaryActionBtn(
-                  label: "SHARE",
-                  icon: CupertinoIcons.share,
-                  onTap: isSuccess ? () => Share.share(provider.currentMessage) : null,
-                ),
-              ),
+              _buildSmallAction(LucideIcons.copy, "COPY", () {
+                HapticFeedback.lightImpact();
+                Clipboard.setData(ClipboardData(text: provider.currentMessage));
+              }, enabled: ok),
+              const SizedBox(width: 8),
+              _buildSmallAction(LucideIcons.heart, "SAVE", () {
+                HapticFeedback.mediumImpact();
+                provider.toggleFavorite();
+              }, enabled: ok),
+              const SizedBox(width: 8),
+              _buildSmallAction(LucideIcons.share, "SHARE", () {
+                HapticFeedback.lightImpact();
+                SharePlus.instance.share(ShareParams(text: provider.currentMessage));
+              }, enabled: ok),
             ],
           ),
         ],
@@ -368,215 +407,44 @@ class _GeneratorScreenState extends State<GeneratorScreen>
     );
   }
 
-  void _copyToClipboard(BuildContext context, String text) {
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text("Copied to clipboard"),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.surfaceLight,
-        duration: 1500.ms,
-      ),
-    );
-  }
-}
-
-class _MessageDisplayCard extends StatelessWidget {
-  final FlirtProvider provider;
-  final AnimationController animCtrl;
-
-  const _MessageDisplayCard({required this.provider, required this.animCtrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppTheme.surface.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.royalPurple.withValues(alpha: 0.1),
-            blurRadius: 40, spreadRadius: -10,
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: _buildContent(context),
+  Widget _buildSmallAction(IconData icon, String label, VoidCallback onTap, {bool enabled = true}) {
+    return Expanded(
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.3,
+        child: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: enabled ? onTap : null,
+          child: GlassCard(
+            height: 50,
+            borderRadius: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 16, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(label, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white)),
+              ],
             ),
           ),
-        ],
-      ),
-    ).animate(onPlay: (c) => c.repeat(reverse: true))
-     .moveY(begin: 0, end: 8, duration: 3.seconds, curve: Curves.easeInOutSine);
-  }
-
-  Widget _buildContent(BuildContext context) {
-    if (provider.state == GeneratorState.loading) return const ShimmerLoading();
-    
-    if (provider.state == GeneratorState.error) {
-      return Text(
-        provider.errorMessage,
-        style: GoogleFonts.inter(color: AppTheme.textSecondary),
-        textAlign: TextAlign.center,
-      );
-    }
-
-    return AnimatedSwitcher(
-      duration: 600.ms,
-      transitionBuilder: (child, anim) => FadeTransition(
-        opacity: anim,
-        child: SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(anim),
-          child: child,
-        ),
-      ),
-      child: Text(
-        provider.currentMessage,
-        key: ValueKey(provider.currentMessage),
-        style: GoogleFonts.cormorantGaramond(
-          fontSize: 26,
-          color: Colors.white,
-          height: 1.3,
-          fontWeight: FontWeight.w500,
-          fontStyle: FontStyle.italic,
-        ),
-        textAlign: TextAlign.center,
-        maxLines: 6,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-}
-
-class _MainActionBtn extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-  final bool isLoading;
-
-  const _MainActionBtn({required this.label, required this.icon, required this.onTap, this.isLoading = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: isLoading ? null : onTap,
-      child: Container(
-        height: 60,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [AppTheme.neonPink, AppTheme.royalPurple]),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(color: AppTheme.neonPink.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5)),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading)
-              const CupertinoActivityIndicator(color: Colors.white)
-            else ...[
-              Icon(icon, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1),
-              ),
-            ]
-          ],
         ),
       ),
     );
   }
-}
-
-class _SecondaryActionBtn extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-  final Color activeColor;
-  final bool isActive;
-
-  const _SecondaryActionBtn({required this.icon, required this.onTap, required this.activeColor, this.isActive = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: onTap,
-      child: Container(
-        width: 60, height: 60,
-        decoration: BoxDecoration(
-          color: isActive ? activeColor.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: isActive ? activeColor.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Icon(icon, color: isActive ? activeColor : Colors.white70, size: 24),
-      ),
-    );
-  }
-}
-
-class _TertiaryActionBtn extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  const _TertiaryActionBtn({required this.label, required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: onTap,
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppTheme.textSecondary, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textSecondary),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  final int count;
-  const _Badge({required this.count});
-  @override
-  Widget build(BuildContext context) => Container(
-        width: 18, height: 18,
-        decoration: const BoxDecoration(color: AppTheme.neonPink, shape: BoxShape.circle),
-        child: Center(
-          child: Text('$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
-        ),
-      );
 }
 
 String _personalizationSummary(FlirtProvider provider, LanguageProvider lp) {
   final name = provider.targetName;
   final trait = provider.targetTrait;
   final parts = <String>[];
-  if (name.isNotEmpty && trait.isNotEmpty) parts.add('${lp.translate('for')} $name · $trait');
-  else if (name.isNotEmpty) parts.add('${lp.translate('for')} $name');
-  else if (trait.isNotEmpty) parts.add('${lp.translate('about')}: $trait');
-  if (provider.hasVibe) parts.add(provider.selectedVibe.label);
+  if (name.isNotEmpty && trait.isNotEmpty) {
+    parts.add('${lp.translate('for')} $name · $trait');
+  } else if (name.isNotEmpty) {
+    parts.add('${lp.translate('for')} $name');
+  } else if (trait.isNotEmpty) {
+    parts.add('${lp.translate('about')}: $trait');
+  }
+  if (provider.hasVibe) {
+    parts.add(provider.selectedVibe.label);
+  }
   return parts.join(' · ');
 }

@@ -3,24 +3,41 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ---------------------------------------------------------------------------
-  // Luxury High-Fidelity Design Tokens
+  // Luxury Startup Design Tokens ($50M Aesthetic)
   // ---------------------------------------------------------------------------
-  static const Color background = Color(0xFF03030F); // Ultra Deep Midnight
+  static const Color background = Color(0xFF020617); // Slate 950 (Modern Deep)
   static const Color surface = Color(0xFF0F172A);
   static const Color surfaceLight = Color(0xFF1E293B);
-  static const Color cardBorder = Color(0xFF334155);
+  static const Color cardBorder = Color(0xFFFFFFFF); // Used with low opacity
 
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Color(0xFF94A3B8);
   static const Color textMuted = Color(0xFF64748B);
 
-  // High-Fidelity Accent Colors (from requested design)
+  // High-Fidelity Accent Colors
   static const Color neonPink = Color(0xFFFE53BB);
   static const Color electricBlue = Color(0xFF08F7FE);
   static const Color royalPurple = Color(0xFF6C5CE7);
   static const Color emeraldGreen = Color(0xFF10B981);
+  static const Color champagneGold = Color(0xFFE5C07B);
 
   static const Color primary = royalPurple;
+  static const Color accentBlue = electricBlue; // Fix for $50M Startup aesthetics
+
+  /// Dynamic Glassmorphism Decoration
+  static BoxDecoration glassDecoration({
+    double opacity = 0.08,
+    double blur = 20,
+    double borderRadius = 24,
+    Color borderColor = Colors.white,
+    double borderOpacity = 0.10,
+  }) {
+    return BoxDecoration(
+      color: Colors.white.withValues(alpha: opacity),
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(color: borderColor.withValues(alpha: borderOpacity), width: 1.2),
+    );
+  }
 
   /// Dynamically generates a production-ready theme based on mode and accent.
   static ThemeData buildTheme({
